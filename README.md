@@ -293,12 +293,12 @@ sub vcl_deliver {
 Useful commands /info should you run into trouble
 
 Network Schema, ft_network: 10.99.0.0/21 by default (2048 IPs available)
->ft_bridge: 10.99.0.0/21  (10.99.0.0 - 10.99.7.255)
->
->ft_api_admin: 10.99.7.250  - A jump off host with connectivity to ft_bridge host for debug
->ft_hitch: 10.99.7.251      - The SSL offload server ccxt connects to
->ft_varnish: 10.99.7.252    - Used to cache api responses, only allows cons to named target 
->ft_stunnel: 10.99.7.253    - SSL client encrypts traffic back to HTTPS to api.binance.com
+- ft_bridge: 10.99.0.0/21  (10.99.0.0 - 10.99.7.255)
+
+- ft_api_admin: 10.99.7.250  - A jump off host with connectivity to ft_bridge host for debug
+- ft_hitch: 10.99.7.251      - The SSL offload server ccxt connects to
+- ft_varnish: 10.99.7.252    - Used to cache api responses, only allows cons to named target 
+- ft_stunnel: 10.99.7.253    - SSL client encrypts traffic back to HTTPS to api.binance.com
 
 There is no direct connectivity to ft_bridge network. Some debug and testing can be done from the api_admin_host which is a slimmed down alpine host with basic connectivity tools.
 
