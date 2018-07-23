@@ -457,10 +457,9 @@ uninstall and setup
 In bot client "run script" update download the new certificate from hitch and trust
  ```
  
+ Uninistall and setup.sh for the changes to take affect.
+ 
 # Problem, I can only connect to api.binance.com
 -  This is by design, to prevent egress data in case of hack/corrupted source etc.
--  default.vcl varnish configuration is set to 404 any requests to any other domain. 
--  To allow other domains modify varnish default.vcl and uninstall / setup.sh 
-
 
 
