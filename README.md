@@ -5,8 +5,9 @@ FreqCache aims to improve Security and Scalbility environmental factors when run
 
 To install FreqCache. 
 1) Clone this repository (git clone https://github.com/creslinux/freqcache.git)
-2) cd freqcache, Run setup.sh 
-3) *To uninstall run uninstall.sh
+2) cd freqcache (the parent directory should keep its 'freqcache' name as expected in generated images/netowrk names)
+3) Run setup.sh 
+4) *To uninstall run uninstall.sh
 
 # Security
 Security in computing is improved by depth. 
