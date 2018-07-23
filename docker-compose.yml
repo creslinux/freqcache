@@ -1,0 +1,66 @@
+version: '3'
+services:
+  ft_stunnel:
+    build: ./1_stunnel
+    restart: unless-stopped
+    hostname: "ft_stunnel"
+    container_name: "ft_stunnel"
+    networks:
+      ft_network:
+        ipv4_address: 10.99.7.253
+    dns:
+      - 10.99.7.253
+    command: ["./client.sh"]
+
+  ft_varnish:  
+    build: ./2_varnish
+    restart: unless-stopped
+    hostname: "ft_varnish"
+    container_name: "ft_varnish"
+    networks:
+      ft_network:
+        ipv4_address: 10.99.7.252
+    links:
+      - "ft_stunnel"
+    volumes:
+      - ./2_varnish/etc/varnish:/etc/varnish
+    depends_on:
+      - ft_stunnel
+    command: ["/run.sh"]
+
+  ft_hitch:
+    build: ./3_hitch  
+    restart: unless-stopped
+    hostname: "ft_hitch"
+    container_name: "ft_hitch"
+    networks:
+      ft_network:
+        ipv4_address: 10.99.7.251
+#    logging:
+#      driver: fluentd
+    links:
+      - "ft_varnish"
+    volumes:
+      - ./3_hitch/etc/ssl/hitch:/etc/ssl/hitch
+    env_file:
+      - ./3_hitch/env_hitch
+    depends_on:
+      - ft_varnish
+
+  ft_api_admin:
+    build: ./4_api_admin
+    restart: unless-stopped
+    hostname: "ft_api_admin"
+    container_name: "ft_api_admin"
+    networks:
+      ft_network:
+        ipv4_address: 10.99.7.250 
+
+networks:
+  ft_network:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.99.0.0/21
+    driver_opts:
+      com.docker.network.bridge.name: ft_bridge
