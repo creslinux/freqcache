@@ -37,6 +37,10 @@ else
 	sleep 5
 fi
 
+echo "running post install"
+sleep 1
+cp -r 3_hitch/etc/ssl/hitch hitch_cert
+
 cat <<"EOF"
 
 #########################################################
@@ -64,7 +68,7 @@ Example RUN script to attach a Docker to the ft_network and api_cache
 
 # download hitch certificate
  file=api.binance.com.cert.pem
- docker cp ft_hitch:/etc/ssl/hitch/${file} hitch_cert/${file}
+ docker cp ft_hitch:/etc/ssl/hitch/${file}  hitch_cert/${file}
  cp "hitch_cert/$file" "hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
  cert_hash="hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
 
