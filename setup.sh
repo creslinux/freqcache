@@ -33,7 +33,8 @@ if [[ "$OSTYPE" != "darwin"* ]]; then
 	sleep 3
 	bash ./firewall.sh
 else
-	echo "sorry firewall is not supported, under this operation system!"
+	echo "Firewall not updated, firewall script is Linux only!"
+	echo "OSX firewall to be included in a future releae"
 	sleep 5
 fi
 
