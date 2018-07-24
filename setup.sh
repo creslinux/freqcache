@@ -11,9 +11,6 @@ echo "generating ceritifate for hitch"
 sleep 3
 bash hitch_cert_gen.sh
 
-echo "Building images" 
-sleep 3
-
 if [[ "$OSTYPE" == "darwin"* ]]; then
 cat <<"EOF"
 
@@ -65,6 +62,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	docker logout
 fi
 
+echo "Building images" 
+sleep 3
 	
 docker-compose up -d 
 
