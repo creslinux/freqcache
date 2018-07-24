@@ -51,16 +51,20 @@ read -n 1 -s -r -p "Press any key to continue or ctr-c to cancel"
 
 fi
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-	echo "docker-compose requires key chain access to install"
-	echo "you will also logged out of docker to allow docker-compose to install"
-        # Mac OSX - needs to disable security
-	security unlock-keychain
-	sleep 1
-	
-	echo "dear user, we are sorry, but for the next step, we need to log you out of docker"
-	docker logout
-fi
+# # This was needed on 1 mac install and not another. 
+# # Commenting out, if users report its needed can add back
+# # Should not escalate privilages unless proven is required.
+#
+#if [[ "$OSTYPE" == "darwin"* ]]; then
+#	echo "docker-compose requires key chain access to install"
+#	echo "you will also logged out of docker to allow docker-compose to install"
+#        # Mac OSX - needs to disable security
+#	security unlock-keychain
+#	sleep 1
+#	
+#	echo "dear user, we are sorry, but for the next step, we need to log you out of docker"
+#	docker logout
+#fi
 
 echo "Building images" 
 sleep 3
