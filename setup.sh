@@ -12,12 +12,30 @@ bash hitch_cert_gen.sh
 
 echo "Building images" 
 sleep 3
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	echo "dear user, we are sorry, but we require to unlock you keychain for this step"
+        # Mac OSX - needs to disable security
+	security unlock-keychain
+	sleep 1
+	
+	echo "dear user, we are sorry, but for the next step, we need to log you out of docker"
+	docker logout
+fi
+
+	
 docker-compose up -d 
 
-## Install firewall rules
-echo "Updating host firwall"
-sleep 3
-bash ./firewall.sh
+
+if [[ "$OSTYPE" != "darwin"* ]]; then
+	## Install firewall rules
+	echo "Updating host firwall"
+	sleep 3
+	bash ./firewall.sh
+else
+	echo "sorry firewall is not supported, under this operation system!"
+	sleep 5
+fi
 
 cat <<"EOF"
 
