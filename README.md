@@ -55,6 +55,7 @@ FreqCache is provided as a docker-compose.yml and compromises of:
 3) Stunnel SSL(HTTPS client) tunnel from api-cache to binance
 4) UFW/IPtables firewall
 5) DNSMask
+6) openssl / easyrsa CA server
 
 The flow of data is CCXT DockerBot > ft_Hitch > ft_Varnish > ft_Stunnel > Exchange.
 
@@ -174,50 +175,13 @@ But in the event binance do move IP, either
 
 # ft_hitch
 Hitch is an SSL offload daemon provded by varnish, the leading fast cache daemon.
-On setup.sh Hitch generates a selfsigned certificate for api.binance.com. 
-To FreqCache another exchange then edit hitch_cert_gen.sh and replace the hostname varibale within:
+On start hitch mounts etc/ssl/hitch from the host 03_hitch/etc/ssl/hitch/.
 
-```#!/usr/bin/env bash
+This directory has been populated at install by ft_ca with the cert/key combined PEM files 
+for all the api target exchanges being supported.
 
-set -e
+To support multiple certificates on a single IP hitch implement SNI matching on the inbound request.
 
-hostname=api.binance.com
-
-local_openssl_config="
-[ req ]
-prompt = no
-distinguished_name = req_distinguished_name
-x509_extensions = san_self_signed
-[ req_distinguished_name ]
-CN=$hostname
-[ san_self_signed ]
-subjectAltName = @alt_names
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment, keyCertSign, cRLSign
-extendedKeyUsage = serverAuth, clientAuth, timeStamping
-[alt_names]
-DNS.1 = *.binance.com
-DNS.2 = localhost
-DNS.3 = *.coinmarketcap.com
-DNS.4 = ${hostname}
-"
-
-openssl req \
-  -newkey rsa:2048 -nodes \
-  -keyout "$hostname.key.pem" \
-  -x509 -sha256 -days 3650 \
-  -config <(echo "$local_openssl_config") \
-  -out "$hostname.cert.pem"
-openssl x509 -noout -text -in "$hostname.cert.pem"
-
-cat $hostname.key.pem $hostname.cert.pem > combined.pem
-
-rm -f 3_hitch/etc/ssl/hitch/*
-mv $hostname* 3_hitch/etc/ssl/hitch/
-mv combined.pem 3_hitch/etc/ssl/hitch/
-```
 
 # ft_varnish
 Varnish is the leading web cache engine, also known as fastly. Varnish is configured out the box to cache PUBLIC kline(candle) and ticker requests for 15 and 5 seconds respectively. 
@@ -405,10 +369,15 @@ docker-compose exec ft_varnish ping ft_stunnel
                                           # useful grep of interesting log lines
 ```
 # Hitch 
-14) Check Host can connect and SSL termination is working
+14) Check Hitch is provding SNI SSL termination
+from ft_api_admin (not host)
+
 ```
-openssl s_client -connect 10.99.7.251:443
+openssl s_client -servername api.binance.com  -connect ft_hitch:443
+openssl s_client -servername api.coinmarketcap.com  -connect ft_hitch:443
 ```
+
+Check the right certificates is returned
 
 # Network
 >15) Inspect docker network, confirm name the inspect 
