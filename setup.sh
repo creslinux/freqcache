@@ -35,7 +35,7 @@ inbound connetions. If one container is allowed then all are.
 These limitations are of Docker on Mac which is running in its 
 own Linux VM, which docker containers and netowrks are then within.
 
-To OSX, Docker and all container and its networks are 1 application,
+To OSX, Docker and all containers and its networks are 1 application,
 that can only have a single Rule base applied. 
 
 freqCache on OSX can provide scalability and DNS protection
