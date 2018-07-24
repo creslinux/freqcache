@@ -4,6 +4,7 @@
 # Install freqcache 
 chmod +x 3_hitch/build.sh
 chmod +x hitch_cert_gen.sh
+chmod +x uninstall.sh
 
 # Generate certificate for Hitch 
 echo "generating ceritifate for hitch" 
@@ -14,7 +15,48 @@ echo "Building images"
 sleep 3
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	echo "dear user, we are sorry, but we require to unlock you keychain for this step"
+cat <<"EOF"
+
+                                             
+ #    #   ##   #####  #    # # #    #  ####  
+ #    #  #  #  #    # ##   # # ##   # #    # 
+ #    # #    # #    # # #  # # # #  # #      
+ # ## # ###### #####  #  # # # #  # # #  ### 
+ ##  ## #    # #   #  #   ## # #   ## #    # 
+ #    # #    # #    # #    # # #    #  ####  
+     
+-------- OSX INSTALL IMPORTANT NOTE ---------
+
+Due to limitations of Docker in OSX it is not possible to 
+prevent a Docker container connecting to the internet.
+
+If one container is allowed outbound access then all are allowed.
+
+It is not possible to prevent a Docker container listening for 
+inbound connetions. If one container is allowed then all are.
+
+These limitations are of Docker on Mac which is running in its 
+own Linux VM, which docker containers and netowrks are then within.
+
+To OSX, Docker and all container and its networks are 1 application,
+that can only have a single Rule base applied. 
+
+freqCache on OSX can provide scalability and DNS protection
+It cannot prevent an container with tainted code leaking data to
+the internet 
+
+For full freqCache protection please install on a Linux environment.
+
+EOF
+
+sleep 3
+read -n 1 -s -r -p "Press any key to continue or ctr-c to cancel"
+
+fi
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	echo "docker-compose requires key chain access to install"
+	echo "you will also logged out of docker to allow docker-compose to install"
         # Mac OSX - needs to disable security
 	security unlock-keychain
 	sleep 1
