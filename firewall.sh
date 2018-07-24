@@ -31,7 +31,7 @@ iptables -I DOCKER-ISOLATION 3 -d 0/0 -i ft_bridge ! -o ft_bridge -j REJECT --re
 # allow hosts on ft_bridge to communicate with each other
 ##
 
-# Create/Flush a PRE_DOCKER chain
+# Create/Flush a B4_DOCKER chain
 chain_exists()
 {
     [ $# -lt 1 -o $# -gt 2 ] && { 
