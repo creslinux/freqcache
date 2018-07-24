@@ -1,28 +1,12 @@
-# See the VCL chapters in the Users Guide at https://www.varnish-cache.org/docs/
-# and https://www.varnish-cache.org/trac/wiki/VCLExamples for more examples.
-vcl 4.0;
-import std;
-
-# Default backend definition. Set this to point to your content server.
-backend default {
-    .host = "ft_stunnel";
-    .port = "8080";
-}
 
 sub vcl_recv {
-     # Lowercase all incoming host portion or URL
-     set req.http.Host = std.tolower(regsub(req.http.Host, ":[0-9]+", ""));
+     # Has not matched a site in all-vhosts. Return a 418
+      return (synth(418, "Im a teapot asked to make a coffee"));
      }
-
-# Include all exchange specific configurations
-include "api-targets.vcl";
-
-# Catch all that have not matchd in all-vhosts. (Error 418 - bounce here)
-include "catch-all.vcl";
 
 sub vcl_backend_response {
 	# Cache policy for matched whitelist of URLs
-    if (bereq.url ~ "^/api/v1/exchangeInfo" || 
+    if (bereq.url ~ "^/api/v1/exchangeInfo" ||
         bereq.url ~ "^/api/v1/depth" ||
         bereq.url ~ "^/api/v1/trades" ||
         bereq.url ~ "^/api/v1/historicalTrades" ||
