@@ -11,7 +11,7 @@ To install FreqCache.
 
 # Security
 Security in computing is improved by depth. 
-This refers to layers of technologies adding protection, so if 1 were vulnerable another mitigates the harm. 
+This refers to layers of technologies adding protection, so if 1 were vulnerable and exploited another mitigates the harm. 
 
 FreqCache tightly controls both Egress (outbound) and Ingress (inbound) data flows.
 
@@ -37,19 +37,20 @@ FreqCache first prevents DNS lookups from any bot, as this itself may be an Egre
 Many are unaware that by default Docker instances compromise the hosts firewall. 
 In Linux, UFW/IPtables rules are silently compromised by Docker that allows connections from any src and to any src from and to docker containers. 
 
-FreqCache provides a custom named Docker network to attache CCXT bots onto, with firewall rule-base to prevent ingress / egresss data flows.
+FreqCache provides a custom named Docker network to attach CCXT bots onto, with firewall rule-base to prevent ingress / egresss data flows.
 
 # Scalability/Availability
-Exchanges are supporting more and more markets (crypto-pairs), traders are wanting to use more strategies in parallel. This is problematic as API limits are too easily hit leading to CCXT bot IP addresses being black listed. 
+Exchanges are supporting more and more markets (crypto-pairs), traders are wanting to use more strategies in parallel. 
+This is problematic as API limits are too easily hit leading to CCXT bot IP addresses being black listed. 
 
-Where multiple trading bots are connecting to the same exchange or bot software does not make an efficient use of requesting Ticker FreqCache helps by caching data for configurable amount of seconds protecting API limits being breached. 
+Where multiple trading bots are connecting to the same exchange or bot software does not make an efficient use of requesting Ticker and Candle data FreqCache helps by caching data for configurable amount of seconds protecting API limits being breached. 
 
 By default FreqCache will cache candle data for 15 seconds and ticker data for 5 seconds. This is confgurable, and may be disabled. In practice this realises a 98% drop in API calls with 5 bots trading 100 markets (pairs / ticker periods).
 
 # Technologies
 FreqCache is provided as a docker-compose.yml and compromises of:
 
-1) Hitch SSL offload from the docker freqtade bot`
+1) Hitch SSL offload from the docker freqtade bot
 2) Varnish Api Cache
 3) Stunnel SSL(HTTPS client) tunnel from api-cache to binance
 4) UFW/IPtables firewall
@@ -57,7 +58,8 @@ FreqCache is provided as a docker-compose.yml and compromises of:
 
 The flow of data is CCXT DockerBot > ft_Hitch > ft_Varnish > ft_Stunnel > Exchange.
 
-FreqCache makes use of its own private bridged Docker network from which only stunnel has outbound connectivty. There is no inbound connectivity allowed.  
+FreqCache makes use of its own private bridged Docker network from which only stunnel has outbound connectivty. 
+There is no inbound connectivity allowed.  
 
 By default Freqache is configured for api.binance.com 
 
