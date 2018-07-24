@@ -1,5 +1,1 @@
-DOMAIN=api.binance.com  
-HITCH_KEY=/etc/ssl/hitch/example.key  
-HITCH_CERT=/etc/ssl/hitch/example.crt 
-HITCH_PEM=/etc/ssl/hitch/combined.pem 
-HITCH_PARAMS="--backend=[ft_varnish]:80 --frontend=[10.99.7.251]:443" 
+HITCH_PARAMS="--backend=[ft_varnish]:80 --frontend=[10.99.7.251]:443"
