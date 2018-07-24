@@ -92,7 +92,7 @@ This should provide the bot with seemless conenctivity to api.binance.com but no
 
 # UFW / IPtables
 Freqcache makes use of Linux firwall to 
- - Prevent any outbound traffic bar Stunnel container to HTTP and DNS
+ - Prevent any outbound traffic bar Stunnel container to HTTPS and DNS
  - Allow hosts on ft_network to talk to each other 
  - Allow localhost on host 'lo' to talk to containers
  - Prevent any inbound connections
