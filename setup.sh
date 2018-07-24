@@ -12,12 +12,34 @@ bash hitch_cert_gen.sh
 
 echo "Building images" 
 sleep 3
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	echo "dear user, we are sorry, but we require to unlock you keychain for this step"
+        # Mac OSX - needs to disable security
+	security unlock-keychain
+	sleep 1
+	
+	echo "dear user, we are sorry, but for the next step, we need to log you out of docker"
+	docker logout
+fi
+
+	
 docker-compose up -d 
 
-## Install firewall rules
-echo "Updating host firwall"
-sleep 3
-bash ./firewall.sh
+
+if [[ "$OSTYPE" != "darwin"* ]]; then
+	## Install firewall rules
+	echo "Updating host firwall"
+	sleep 3
+	bash ./firewall.sh
+else
+	echo "sorry firewall is not supported, under this operation system!"
+	sleep 5
+fi
+
+echo "running post install"
+sleep 1
+cp -r 3_hitch/etc/ssl/hitch hitch_cert
 
 cat <<"EOF"
 
@@ -46,7 +68,7 @@ Example RUN script to attach a Docker to the ft_network and api_cache
 
 # download hitch certificate
  file=api.binance.com.cert.pem
- docker cp ft_hitch:/etc/ssl/hitch/${file} hitch_cert/${file}
+ docker cp ft_hitch:/etc/ssl/hitch/${file}  hitch_cert/${file}
  cp "hitch_cert/$file" "hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
  cert_hash="hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
 
