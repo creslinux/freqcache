@@ -1,18 +1,28 @@
 #!/usr/bin/env bash
 
-
 # Install freqcache 
 chmod +x 3_hitch/build.sh
 chmod +x uninstall.sh
 
+#####
 # Build CA and generate cert/keys for all URLs in 5_ca/api-list
+# - Builds root CA, certs and keys for servers
+# - copies ca directory with all cert and keys under 5_ca/ca/
+# - copies server certs into 3_hitch/etc/ssl/hitch 
+##
 echo "Installing ft_ca Certificate Authority"
 sleep 3
-chmod +x 5_ca/run.sh
-5_ca/run.sh
+chmod +x 5_ca/build_ca_certs.sh
+5_ca/build_ca_certs.sh
 
-#Copy pem files into hitch certificate directory
-cp 5_ca/ca/pki/pem/*.pem 3_hitch/etc/ssl/hitch/
+
+#####
+# Build Varnish rules for each domain in 5_ca/api-list
+# Rules are copied into 2_varnish/etc/varnish/sites-enabled
+##
+chmod +x 5_ca/varnish_vhosts.sh
+5_ca/varnish_vhosts.sh
+
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 cat <<"EOF"
@@ -127,4 +137,3 @@ Example RUN script to attach a Docker to the ft_network and api_cache
 
 EOF
 docker ps | grep 'freqcache_ft'
-
