@@ -55,7 +55,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	echo "docker-compose requires key chain access to install"
 	echo "you will also logged out of docker to allow docker-compose to install"
         # Mac OSX - needs to disable security
-	security unlock-keychain
+#	security unlock-keychain
 	sleep 1
 	
 	echo "dear user, we are sorry, but for the next step, we need to log you out of docker"

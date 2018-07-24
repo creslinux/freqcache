@@ -1,0 +1,36 @@
+# Easy-RSA 3 parameter settings
+if [ -z "$EASYRSA_CALLER" ]; then
+	echo "You appear to be sourcing an Easy-RSA 'vars' file." >&2
+	echo "This is no longer necessary and is disallowed. See the section called" >&2
+	echo "'How to use this file' near the top comments for more details." >&2
+	return 1
+fi
+
+set_var EASYRSA	"/usr/share/easy-rsa"
+set_var EASYRSA_OPENSSL	"openssl"
+set_var EASYRSA_PKI "$EASYRSA/pki"
+set_var EASYRSA_DN	"cn_only"
+set_var EASYRSA_REQ_COUNTRY	"Artic"
+set_var EASYRSA_REQ_PROVINCE	"Cricle"
+set_var EASYRSA_REQ_CITY	"TopOftheWorld"
+set_var EASYRSA_REQ_ORG	        "Pola Bears not Penguis"
+set_var EASYRSA_REQ_EMAIL	"elves@igloos.com"
+set_var EASYRSA_REQ_OU		"Northern Lights"
+# 1024 is ok, it all internal coms from docker to hitch
+# quicker to setup and less overhead to process
+set_var EASYRSA_KEY_SIZE	1024
+set_var EASYRSA_ALGO		rsa
+set_var EASYRSA_CA_EXPIRE	3650
+set_var EASYRSA_CERT_EXPIRE	3650
+set_var EASYRSA_CRL_DAYS	3649
+set_var EASYRSA_NS_SUPPORT	"yes"
+set_var EASYRSA_NS_COMMENT	"internal freqCache CA cert"
+set_var EASYRSA_TEMP_FILE	"$EASYRSA_PKI/extensions.temp"
+alias awk="/alt/bin/awk"
+alias cat="/alt/bin/cat"
+#set_var EASYRSA_EXT_DIR	"$EASYRSA/x509-types"
+set_var EASYRSA_SSL_CONF	"$EASYRSA/openssl-1.0.cnf"
+set_var EASYRSA_REQ_CN		"ft"
+set_var EASYRSA_DIGEST		"sha256"
+set_var EASYRSA_BATCH		"y"
+
