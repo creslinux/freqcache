@@ -67,6 +67,7 @@ Example RUN script to attach a bot to the ft_network and api_cache
 
 ```
  file=api.binance.com.cert.pem
+ mkdir hitch_cert
  docker cp ft_hitch:/etc/ssl/hitch/${file} hitch_cert/${file}
  cp "hitch_cert/$file" "hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
  cert_hash="hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
