@@ -53,6 +53,7 @@ FreqCache is provided as a docker-compose.yml and compromises of:
 2) Varnish Api Cache
 3) Stunnel SSL(HTTPS client) tunnel from api-cache to binance
 4) UFW/IPtables firewall
+5) DNSMask
 
 The flow of data is CCXT DockerBot > ft_Hitch > ft_Varnish > ft_Stunnel > Exchange.
 
@@ -155,6 +156,18 @@ iptables -I B4_DOCKER 5 -i ft_bridge -o ft_bridge -j ACCEPT
 iptables -I FORWARD -o ft_bridge -j B4_DOCKER
 iptables -I DOCKER-ISOLATION -o ft_bridge -j B4_DOCKER
 ```
+
+# DNSMask
+DNSMask is hosted on ft_stunnel. 
+The host itself is configured to use itslsef for DNS resolution. A feature of DNSMask is it can, by default, read entries from a local /etc/hosts file and return these as authortive to lookups. 
+
+On start ft_stunnel takes a snapshot of api.binance.com IP address and writes to /etc/hosts. 
+This protects against DNS poisoning / Hijack 
+
+Refreshing the IP address should not be needed as exchange addresses are static; 
+But in the event binance do move IP, either 
+ - uninstal / setup.sh
+ - docker exec -it ft_stunnel bash , and edit /etc/host
 
 # ft_hitch
 Hitch is an SSL offload daemon provded by varnish, the leading fast cache daemon.
