@@ -2,5 +2,6 @@
 hitch_cert
 3_hitch/etc/ssl/hitch/*.pem
 5_ca/ca
+2_varnish/etc/varnish/sites-enabled/*.vcl
 
 
