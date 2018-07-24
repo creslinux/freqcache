@@ -32,9 +32,9 @@ FreqCache mitigates this exposure. Should your software or linked library be com
 > (man in the middle) proxy. Where API credentials and 
 > Passwords were harvested. 
 
-FreqCache first prevents DNS lookups from any bot, as this itself may be an Egress of data. Secondly the "edge" host runs DNS-Mask that is configured to host-file an exchanges IP address.  In the even of DNS hijack/poisoning bots behind FreqCache remained glued to the real exchange IP address.
+FreqCache first prevents DNS lookups from any bot, as this itself may be an Egress leak of data. Secondly the "edge" host runs DNS-Mask that is configured to host-file an exchanges IP address.  In the event of DNS hijack/poisoning bots behind FreqCache remained glued to the real exchange IP address.
 
-Many are unaware that by default docker instances compromise the hosts firewall. 
+Many are unaware that by default Docker instances compromise the hosts firewall. 
 In Linux, UFW/IPtables rules are silently compromised by Docker that allows connections from any src and to any src from and to docker containers. 
 
 FreqCache provides a custom named Docker network to attache CCXT bots onto, with firewall rule-base to prevent ingress / egresss data flows.
