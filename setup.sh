@@ -6,10 +6,14 @@ chmod +x 3_hitch/build.sh
 chmod +x hitch_cert_gen.sh
 chmod +x uninstall.sh
 
-# Generate certificate for Hitch 
-echo "generating ceritifate for hitch" 
+# Build CA and generate cert/keys for all URLs in 5_ca/api-list
+echo "Installing ft_ca Certificate Authority"
 sleep 3
-bash hitch_cert_gen.sh
+chmod +x 5_ca/run.sh
+5_ca/run.sh
+
+#Copy pem files into hitch certificate directory
+cp 5_ca/ca/pki/pem/*.pem 3_hitch/etc/ssl/hitch/
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 cat <<"EOF"
