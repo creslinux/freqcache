@@ -1,10 +1,11 @@
 
 sub vcl_recv {
-    if ( req.http.Host != ufciuwcginfhinfwihwihfixwfew ) {
+    if ( req.http.Host != "ufciuwcginfhinfwihwihfixwfew" ) {
      # Has not matched a site in all-vhosts. Return a 418
         return (synth(418, "Im a teapot asked to make a coffee"));
      }
-     
+}
+
 sub vcl_backend_response {
 	# Cache policy for matched whitelist of URLs
     if (bereq.url ~ "^/api/v1/exchangeInfo" ||

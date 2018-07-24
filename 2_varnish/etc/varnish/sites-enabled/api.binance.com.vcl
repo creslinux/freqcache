@@ -34,3 +34,4 @@ sub vcl_recv {
                     return(pass);
         }
 	}
+}

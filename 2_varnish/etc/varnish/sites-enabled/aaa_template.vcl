@@ -1,3 +1,4 @@
+sub vcl_recv {
     # Only process calls to this domain
      if (req.http.Host == "aaa_template.com") {
         # Not a method we know about - pretened we're not here
@@ -33,3 +34,4 @@
                     return(pass);
         }
 	}
+}
