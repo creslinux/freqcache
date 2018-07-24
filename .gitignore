@@ -1,3 +1,6 @@
 # let's not commit our certificate directory
 hitch_cert
+3_hitch/etc/ssl/hitch/*.pem
+5_ca/ca
+
 

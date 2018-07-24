@@ -3,7 +3,6 @@
 
 # Install freqcache 
 chmod +x 3_hitch/build.sh
-chmod +x hitch_cert_gen.sh
 chmod +x uninstall.sh
 
 # Build CA and generate cert/keys for all URLs in 5_ca/api-list
