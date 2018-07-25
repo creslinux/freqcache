@@ -135,7 +135,7 @@ cat <<"EOF"
   -v $(pwd)/ft_ca_root:/ft_ca_root \
   -e SSL_CERT_FILE="/ft_ca_root/ca.crt \
   -e CURL_CA_BUNDLE="/ft_ca_root/ca.crt" \
-  -e REQUESTS_CA_BUNDLE="/${cert_hash}" \
+  -e REQUESTS_CA_BUNDLE="/ft_ca_root/ca.crt" \
   ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND>
 
 EOF
