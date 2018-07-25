@@ -29,7 +29,11 @@ do
   fi
 done
 
+# backup orig
 mv api-list api-list.pre-check
+# sort uniq
+cp api-list.checked api-list
+cat api-list | sort | uniq > api-list.checked
 cp api-list.checked api-list
 
 IFS=$' \t\n'
