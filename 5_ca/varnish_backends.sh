@@ -40,8 +40,20 @@ if (req.http.host == "\"${x}\"") {
     set req.backend = ${x};
 }
 " 
-# no "." in backend names, replace with _
+# Varnish does not allow "." in backend names, replace with _
 y=`echo ${x} | sed 's/\./_/g'`
+
+# Also no numerics in Varnish labels..... varnish yey num2alpha
+mod=${y//1/A} ; y=$mod
+mod=${y//2/B} ; y=$mod
+mod=${y//3/C} ; y=$mod
+mod=${y//4/D} ; y=$mod
+mod=${y//5/E} ; y=$mod
+mod=${y//6/F} ; y=$mod
+mod=${y//7/G} ; y=$mod
+mod=${y//8/H} ; y=$mod
+mod=${y//9/I} ; y=$mod
+mod=${y//0/J} ; y=$mod
 
 CONFIG_BACK="
 backend ${y} {
