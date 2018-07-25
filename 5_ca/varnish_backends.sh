@@ -29,17 +29,13 @@ cd ${here}
 port=50000 
 # Empty the files
 rm ../2_varnish/etc/varnish/backends.vcl
+rm ../2_varnish/etc/varnish/backend_inc_logic.vcl
 rm ../2_varnish/etc/varnish/b_end
 rm ../2_varnish/etc/varnish/b_inc
 
 for x in `cat ../5_ca/api-list | tr '[:upper:]' '[:lower:]'| grep [a-z]` 
 do
 
-CONFIG_INC="
-if (req.http.host == "\"${x}\"") {
-    set req.backend = ${x};
-}
-" 
 # Varnish does not allow "." in backend names, replace with _
 y=`echo ${x} | sed 's/\./_/g'`
 
@@ -64,16 +60,22 @@ backend ${y} {
     .between_bytes_timeout = 60s;
 }
 "
-port=$((port + 1))
 
+CONFIG_INC="
+if (req.http.host == "\"${x}\"") {
+    set req.backend = ${y};
+}
+" 
+
+port=$((port + 1))
 echo "${CONFIG_BACK}">>../2_varnish/etc/varnish/b_end
 echo "${CONFIG_INC}">>../2_varnish/etc/varnish/b_inc
 
 done
 
-# fill backends.vcl - backends then includes
+# fill backends.vcl backend_inc_logic.vcl ( includeds in default.vcl)
 cat ../2_varnish/etc/varnish/b_end>>../2_varnish/etc/varnish/backends.vcl
-cat ../2_varnish/etc/varnish/b_inc>>../2_varnish/etc/varnish/backends.vcl
+cat ../2_varnish/etc/varnish/b_inc>>../2_varnish/etc/varnish/backend_inc_logic.vcl
 
 # Send back 
 cd ..
