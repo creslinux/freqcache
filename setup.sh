@@ -15,6 +15,9 @@ sleep 3
 chmod +x 5_ca/build_ca_certs.sh
 5_ca/build_ca_certs.sh
 
+# Put ca.crt in parent dir to be easily found
+cp 5_ca/ca/pki/ca.crt ca.crt
+
 
 #####
 # Build Varnish rules for each domain in 5_ca/api-list
@@ -117,21 +120,18 @@ To uninstall api-cache run: bash uninstall.sh
 
 To use api-cache connect docker containers.
 Example RUN script to attach a Docker to the ft_network and api_cache
+Adds ft root ca cert, sets dns
 
-# download hitch certificate
- file=api.binance.com.cert.pem
- mkdir hitch_cert
- docker cp ft_hitch:/etc/ssl/hitch/${file}  hitch_cert/${file}
- cp "hitch_cert/$file" "hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
- cert_hash="hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
+ mkdir ft_ca_root/
+ cp <your freqcache dir>/ca.crt ft_ca_root/ca.crt
 
-# launch run container.
  docker run -d \
   --net="bridge" \
   --network=freqcache_ft_network \
-  --add-host="api.binance.com:10.99.7.251" \
-  -v $(pwd)/hitch_cert:/hitch_cert \
-  -e SSL_CERT_FILE="/${cert_hash}" \
+  --dns=10.99.7.249 \
+  -v $(pwd)/ft_ca_root:/ft_ca_root \
+  -e SSL_CERT_FILE="/ft_ca_root/ca.crt \
+  -e CURL_CA_BUNDLE="/ft_ca_root/ca.crt" \
   -e REQUESTS_CA_BUNDLE="/${cert_hash}" \
   ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND> 
 
