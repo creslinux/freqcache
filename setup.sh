@@ -157,3 +157,6 @@ cat <<"EOF"
 EOF
 
 docker ps | grep 'freqcache_ft'
+
+read -n 1 -s -r -p "Install complete, press any key to tail docker-compose logs, or ctr-c"
+docker-compose logs -f
