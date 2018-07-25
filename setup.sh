@@ -50,6 +50,10 @@ chmod +x uninstall.sh
 # - copies ca directory with all cert and keys under 5_ca/ca/
 # - copies server certs into 3_hitch/etc/ssl/hitch 
 ##
+# clean users api-list
+chmod +x 5_ca/clean_api_list.sh
+5_ca/clean_api_list.sh
+
 echo "Installing ft_ca Certificate Authority"
 sleep 3
 chmod +x 5_ca/build_ca_certs.sh
@@ -62,9 +66,21 @@ cp 5_ca/ca/pki/ca.crt ca.crt
 #####
 # Build Varnish rules for each domain in 5_ca/api-list
 # Rules are copied into 2_varnish/etc/varnish/sites-enabled
+#
+# Build Varnish Backends (V-backends must match stunnel channels)
+# Backends are written into 2_varnish/etc/varnish/backends.vcl
 ##
 chmod +x 5_ca/varnish_vhosts.sh
+chmod +x 5_ca/varnish_backends.sh
 5_ca/varnish_vhosts.sh
+5_ca/varnish_backends.sh
+
+#####
+# Build Stunnel Channels (stunnel channels must match varnish backends)
+# Stunnel channels are written into 1_stunnel/conf.d/
+chmod +x 5_ca/stunnel_channels.sh
+5_ca/stunnel_channels.sh
+
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	echo "docker-compose requires key chain access to install"
