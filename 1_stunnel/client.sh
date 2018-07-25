@@ -19,5 +19,4 @@ connect = api.binance.com:443
 "
 
 echo "$CONFIG" > /etc/stunnel/stunnel.conf
-echo "`host api.binance.com  | tail -1 | awk '{print $NF}'` api.binance.com" >> /etc/hosts
 /usr/bin/stunnel
