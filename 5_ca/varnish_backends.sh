@@ -28,10 +28,10 @@ cd ${here}
 
 port=50000 
 # Empty the files
-rm ../2_varnish/etc/varnish/backends.vcl
-rm ../2_varnish/etc/varnish/backend_inc_logic.vcl
-rm ../2_varnish/etc/varnish/b_end
-rm ../2_varnish/etc/varnish/b_inc
+>../2_varnish/etc/varnish/backends.vcl
+>../2_varnish/etc/varnish/backend_inc_logic.vcl
+>../2_varnish/etc/varnish/b_end
+>../2_varnish/etc/varnish/b_inc
 
 for x in `cat ../5_ca/api-list | tr '[:upper:]' '[:lower:]'| grep [a-z]` 
 do
