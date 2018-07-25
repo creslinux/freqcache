@@ -5,7 +5,9 @@ services:
     restart: unless-stopped
     hostname: "ft_stunnel"
     container_name: "ft_stunnel"
-    dns: 10.99.7.253
+    dns: 10.99.7.248
+    volumes:
+      - ./1_stunnel/resolv.conf:/etc/resolv.conf
     networks:
       ft_network:
         ipv4_address: 10.99.7.253
@@ -72,6 +74,20 @@ services:
     networks:
       ft_network:
         ipv4_address: 10.99.7.249 
+    command: ["/run.sh"]
+
+  ft_unbound:
+    build: ./7_unbound
+    restart: unless-stopped
+    hostname: "ft_unbound"
+    container_name: "ft_unbound"
+    dns: 10.99.7.248
+    volumes:
+      - ./7_unbound/unbound.conf:/etc/unbound/unbound.conf
+      - ./7_unbound/resolv.conf:/etc/resolv.conf
+    networks:
+      ft_network:
+        ipv4_address: 10.99.7.248
     command: ["/run.sh"]
 
 networks:
