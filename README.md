@@ -84,20 +84,25 @@ By default Freqache is configured for api.binance.com
 To connect a docker CCXT bot into FreqCache modify its Run script. 
 Example RUN script to attach a bot to the ft_network and api_cache
 
+The key points are
+1) connect to ft_network, this puts the bot behind the firewall
+2) use 10.99.7.249 as dns,  this is DNSMasq and will point all HTTPS flows to ft_hitch
+3) mount and use your ca.cert to trust Hitch SNI termination
+
 ```
- file=api.binance.com.cert.pem
- docker cp ft_hitch:/etc/ssl/hitch/${file} hitch_cert/${file}
- cp "hitch_cert/$file" "hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
- cert_hash="hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
- 
+  mkdir -p ft_ca_root/
+ cp <your install dir>/freqcache/ca.crt ft_ca_root/ca.crt
+
+
  docker run -d \
   --net="bridge" \
   --network=freqcache_ft_network \
-  --add-host="api.binance.com:10.99.7.251" \
-  -v $(pwd)/hitch_cert:/hitch_cert \
-  -e SSL_CERT_FILE="/${cert_hash}" \
-  -e REQUESTS_CA_BUNDLE="/${cert_hash}" \
-  ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND> 
+  --dns=10.99.7.249 \
+  -v $(pwd)/ft_ca_root:/ft_ca_root \
+  -e SSL_CERT_FILE="/ft_ca_root/ca.crt" \
+  -e CURL_CA_BUNDLE="/ft_ca_root/ca.crt" \
+  -e REQUESTS_CA_BUNDLE="/ft_ca_root/ca.crt" \
+  ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND>
 ```
 This will: 
 - Connect the bot to the firewalled Docker "ft_network" 
