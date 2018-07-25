@@ -208,6 +208,13 @@ Varnish configuation files are mounted when the service is ran and can be found 
 ls 2_varnish/etc/varnish/
 ```
 
+For changes to the rules to be loaded stop/star varnish
+
+```
+docker stop ft_varnish
+docker start ft_varnish
+```
+
 With this structure the follwing files are present and are included in the order described:
 
 ```
