@@ -1,6 +1,11 @@
-docker stop ft_stunnel ft_varnish ft_hitch ft_api_admin ft_ca
-docker rm ft_stunnel ft_varnish ft_hitch ft_api_admin ft_ca
-docker rmi freqcache_ft_stunnel freqcache_ft_varnish freqcache_ft_hitch freqcache_ft_api_admin freqcache_ft_ca
-# Remove old certs
+#!/usr/bin/env bash
+#/usr/bin/env bash
+## Clear down freqcache containers, images, generated content 
+
+docker stop ft_stunnel ft_varnish ft_hitch ft_api_admin ft_ca ft_dnsmask
+docker rm ft_stunnel ft_varnish ft_hitch ft_api_admin ft_ca ft_dnsmasq
+docker rmi freqcache_ft_stunnel freqcache_ft_varnish freqcache_ft_hitch freqcache_ft_api_admin freqcache_ft_ca freqcache_ft_dnsmasq
+
+# Remove old certs and vcl configs
 rm -rf 5_ca/ca
 rm 3_hitch/etc/ssl/hitch/* 
