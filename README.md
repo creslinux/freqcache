@@ -32,12 +32,28 @@ FreqCache mitigates this exposure. Should your software or linked library be com
 > (man in the middle) proxy. Where API credentials and 
 > Passwords were harvested. 
 
-FreqCache first prevents DNS lookups from any bot, as this itself may be an Egress leak of data. Secondly the "edge" host runs DNS-Mask that is configured to host-file an exchanges IP address.  In the event of DNS hijack/poisoning bots behind FreqCache remained glued to the real exchange IP address.
+FreqCache first prevents DNS lookups from any bot reaching the internet (except stunnel), as this itself may be an Egress leak of data.  Freqtrade runs two DNS servers:
 
+1) DNSMasq - provides service to all internal bots. It will respond to any query with the IP address of hitch. 
+This is used as a simple means to configure containers to direct their functional traffic to the freqcache proxy
+
+2) unbound - provides DNS with real IP Addresses to Stunnle. unbound will only respond to requests from Stunnel. 
+   unbound is configured to cache all responses for 1,000 days.   
+   
+   This prevents any DNS poisoning or Hijacking upstream from compromising the outbound flow IP target from stunnel for HTTPS connections. The DNS can be flushed/reloaded to refresh the IP cache to update if desired (an exchange has moved its IP addres this is quite rare as exchanges provide steady API targets)
+   
 Many are unaware that by default Docker instances compromise the hosts firewall. 
 In Linux, UFW/IPtables rules are silently compromised by Docker that allows connections from any src and to any src from and to docker containers. 
 
-FreqCache provides a custom named Docker network to attache CCXT bots onto, with firewall rule-base to prevent ingress / egresss data flows.
+FreqCache provides a custom named Docker network to attache CCXT bots onto, with firewall rule-base to prevent ingress / egresss data flows. 
+
+The firewall can be summarised as: 
+
+1) Only stunnel can make outbound HTTPS connections
+2) Only unbound can make outbound DNS queries
+3) Containers on the ft_network can talk to each other 
+4) Host 127.0.0.1 can connect to ft_network
+5) ALL other ingress and egress connections are blocked
 
 # Scalability/Availability
 Exchanges are supporting more and more markets (crypto-pairs), traders are wanting to use more strategies in parallel. This is problematic as API limits are too easily hit leading to CCXT bot IP addresses being black listed. 
@@ -98,10 +114,10 @@ Freqcache makes use of Linux firwall to
  - Prevent any inbound connections
  
  ```
- #!/usr/bin/env bash
+#!/usr/bin/env bash
 # Script to harden firewall to isolate ft_bridge network 
 #
-# TLDR - only stunnel out to dns https, all other out and inbound traffic dropped.
+# TLDR - only stunnel out to https, only unbound out to dsn, all other out and inbound traffic dropped.
 ##
 if [[ $EUID -ne 0 ]]; then
    echo "This script is executing firewall.sh for ft_cache, sudo  privilage to update iptables" 
@@ -115,14 +131,20 @@ fi
 # Docker is a "bit of an arse" it can use FORWARD or DOCKER-ISOLATION... so add to both  
 ##
 
-# Allow outbound DNS and HTTPs from Stunnel (7.253) only
-iptables -I FORWARD 1 -s 10.99.7.253 -p udp -d 0/0 --dport 53 -j ACCEPT
-iptables -I FORWARD 2 -s 10.99.7.253 -p tcp -d 0/0 --dport 443 -j ACCEPT
-iptables -I FORWARD 3  -d 0/0 -i ft_bridge ! -o ft_bridge -j REJECT --reject-with icmp-port-unreachable
+# Flush the chains
+iptables -F FORWARD
+iptables -F DOCKER-ISOLATION
 
-iptables -I DOCKER-ISOLATION 1 -s 10.99.7.253 -p udp -d 0/0 --dport 53 -j ACCEPT
-iptables -I DOCKER-ISOLATION 2 -s 10.99.7.253 -p tcp -d 0/0 --dport 443 -j ACCEPT 
-iptables -I DOCKER-ISOLATION 3 -d 0/0 -i ft_bridge ! -o ft_bridge -j REJECT --reject-with icmp-port-unreachable
+# Allow outbound HTTPs from Stunnel (7.253) and outbound DNS from unbound (7.248) only
+iptables -I FORWARD 1 -s 10.99.7.248 -p udp -d 0/0 --dport 53 -j ACCEPT
+iptables -I FORWARD 2 -s 10.99.7.248 -p tcp -d 0/0 --dport 53 -j ACCEPT
+iptables -I FORWARD 3 -s 10.99.7.253 -p tcp -d 0/0 --dport 443 -j ACCEPT
+iptables -I FORWARD 4  -d 0/0 -i ft_bridge ! -o ft_bridge -j REJECT --reject-with icmp-port-unreachable
+
+iptables -I DOCKER-ISOLATION 1 -s 10.99.7.248 -p udp -d 0/0 --dport 53 -j ACCEPT
+iptables -I DOCKER-ISOLATION 2 -s 10.99.7.248 -p tcp -d 0/0 --dport 53 -j ACCEPT
+iptables -I DOCKER-ISOLATION 3 -s 10.99.7.253 -p tcp -d 0/0 --dport 443 -j ACCEPT 
+iptables -I DOCKER-ISOLATION 4 -d 0/0 -i ft_bridge ! -o ft_bridge -j REJECT --reject-with icmp-port-unreachable
 
 ##############
 # Ingress Rules:
@@ -169,6 +191,14 @@ connect to hitch, api.binance.com as example.
 
 DNSMasq will respond to any client without restriction. 
 DNSMasq has not upstream route/connectivity.
+
+# unbound
+Caching DNS server unbound is installed on ft_unbound. 
+
+Unbound will only respond to request from ft_stunnel and will provide real IP detail.
+Unbound will cache and not refresh IP resolution from upstream for 1,000 days - preventing upstream DNS poisoning or hijacking from impacting our IP destination. 
+
+Unbound can be restarted/reloaded to clear/force refresh of its DNS cache.
 
 # ft_hitch
 Hitch is an SSL offload daemon provded by varnish, the leading fast cache daemon.
