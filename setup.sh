@@ -121,13 +121,13 @@ Example RUN script to attach a Docker to the ft_network and api_cache
 Adds ft root ca cert, sets dns
 
  mkdir -p ft_ca_root/
-
 EOF
-
 pwd=$(pwd)
-echo "cp ${pwd}/ca.crt ft_ca_root/ca.crt
+echo " cp ${pwd}/ca.crt ft_ca_root/ca.crt"
 
 cat <<"EOF"
+
+
  docker run -d \
   --net="bridge" \
   --network=freqcache_ft_network \
@@ -136,7 +136,8 @@ cat <<"EOF"
   -e SSL_CERT_FILE="/ft_ca_root/ca.crt \
   -e CURL_CA_BUNDLE="/ft_ca_root/ca.crt" \
   -e REQUESTS_CA_BUNDLE="/${cert_hash}" \
-  ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND> 
+  ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND>
 
 EOF
+
 docker ps | grep 'freqcache_ft'
