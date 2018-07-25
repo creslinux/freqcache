@@ -9,6 +9,8 @@ backend default {
     .port = "8080";
 }
 
+include "backends.vcl";
+
 sub vcl_recv {
      # Lowercase all incoming host portion or URL
      set req.http.Host = std.tolower(regsub(req.http.Host, ":[0-9]+", ""));
