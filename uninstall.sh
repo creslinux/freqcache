@@ -9,3 +9,4 @@ docker rmi freqcache_ft_stunnel freqcache_ft_varnish freqcache_ft_hitch freqcach
 # Remove old certs and vcl configs
 rm -rf 5_ca/ca
 rm 3_hitch/etc/ssl/hitch/* 
+rm 1_stunnel/conf.d/*
