@@ -53,8 +53,10 @@ FreqCache is provided as a docker-compose.yml and compromises of:
 2) Varnish Api Cache
 3) Stunnel SSL(HTTPS client) tunnel from api-cache to binance
 4) UFW/IPtables firewall
-5) DNSMask
-6) openssl / easyrsa CA server
+5) DNSMask  - DNS server Inside: replies to any query with the IP of hitch. Used by clients. 
+6) openssl / easyrsa CA server: Creates server certificates for every target and CA file to trust.
+7) unbound - DNS server Edge: Serves Stunnel only - replies with real IPs and caches for 1,000 days to prevent poisoning.
+
 
 The flow of data is CCXT DockerBot > ft_Hitch > ft_Varnish > ft_Stunnel > Exchange.
 
@@ -158,17 +160,15 @@ iptables -I FORWARD -o ft_bridge -j B4_DOCKER
 iptables -I DOCKER-ISOLATION -o ft_bridge -j B4_DOCKER
 ```
 
-# DNSMask
-DNSMask is hosted on ft_stunnel. 
-The host itself is configured to use itslsef for DNS resolution. A feature of DNSMask is it can, by default, read entries from a local /etc/hosts file and return these as authortive to lookups. 
+# DNSMasq
+DNSMasq is hosted on ft_dnsmasq 
 
-On start ft_stunnel takes a snapshot of api.binance.com IP address and writes to /etc/hosts. 
-This protects against DNS poisoning / Hijack 
+DNSMasq is configrued to respond to any request with the IP address of the hitch host on the ft_network. 
+By setting it as the dns server for all docker clients it ensure what ever endpoint they're trying to resolver will 
+connect to hitch, api.binance.com as example. 
 
-Refreshing the IP address should not be needed as exchange addresses are static; 
-But in the event binance do move IP, either 
- - uninstal / setup.sh
- - docker exec -it ft_stunnel bash , and edit /etc/host
+DNSMasq will respond to any client without restriction. 
+DNSMasq has not upstream route/connectivity.
 
 # ft_hitch
 Hitch is an SSL offload daemon provded by varnish, the leading fast cache daemon.
@@ -179,64 +179,69 @@ for all the api target exchanges being supported.
 
 To support multiple certificates on a single IP hitch implement SNI matching on the inbound request.
 
+The pem files created on your install can be viewed under: 
+```
+ls 3_hitch/etc/ssl/hitch/
+
+1broker.com.pem                  api.lbank.info.pem              paymium.com.pem
+1btcxe.com.pem                   api.liqui.io.pem                plus-api.btcchina.com.pem
+acx.io.pem                       api.livecoin.net.pem            polon
+
+```
 
 # ft_varnish
 Varnish is the leading web cache engine, also known as fastly. Varnish is configured out the box to cache PUBLIC kline(candle) and ticker requests for 15 and 5 seconds respectively. 
 
-Varnish is also confiured to block and requests that are not to api.binance.com.
-This configuration can be changed by editing the default.vcl file:
+Varnish is also confiured to block and requests that are not to an entry in your api-list.
+Varnish configuation files are mounted when the service is ran and can be found under: 
+
+The configuration files are built by the script shown which is executed at install. 
+The script loops through your api-list end points and creates a vcl ruls and include for each record.
 
 ```
-# See the VCL chapters in the Users Guide at https://www.varnish-cache.org/docs/
-# and https://www.varnish-cache.org/trac/wiki/VCLExamples for more examples.
+5_ca/varnish_vhosts.sh
+```
+
+Varnish configuation files are mounted when the service is ran and can be found under: 
+
+```
+ls 2_varnish/etc/varnish/
+```
+
+With this structure the follwing files are present and are included in the order described:
+
+```
+default.vcl  (head of the configutation with common rules - which includes:)
+> api-targets.vcl  (a list of site-enabled/a.exchange.com.vcl to include)
+>>> sites-enabled/a.site.com.vcl
+>>> sites-enabled/anoher.exchange.com.vcl
+> catch-all.vcl (footer of configuration with common deny and other rules)
+```
+Any site without an include in api-targets.vcl and a rule file under sites-enabled/ will be returned with a HTTP err 418. 
+
+default.vcl:
+
+```
 vcl 4.0;
 import std;
+
 # Default backend definition. Set this to point to your content server.
 backend default {
     .host = "ft_stunnel";
     .port = "8080";
 }
+
 sub vcl_recv {
      # Lowercase all incoming host portion or URL
      set req.http.Host = std.tolower(regsub(req.http.Host, ":[0-9]+", ""));
+     }
 
-     # Only process calls to api.binance.com - 404 everything else. 
-     if (req.http.Host != "api.binance.com") {
-       return (synth(418, "Im a teapot asked to make a coffee"));
-     }
-	# Not a method we know about - pretened we're not here
-	# pipe is right on past
-     if (req.method != "GET" &&
-       req.method != "HEAD" &&
-       req.method != "PUT" &&
-       req.method != "POST" &&
-       req.method != "TRACE" &&
-       req.method != "OPTIONS" &&
-       req.method != "DELETE") {
-         return (pipe);
-     }
-	# We're not going to cache anything not GET or HEAD 
-	# anything other methods get a bypass first
-     if (req.method != "GET" && req.method != "HEAD") {
-         return (pass);
-     }
-	# White list of URLs to cache
-	# If not one these then bypass proxy and direct to binance
-     if (req.url ~ "^/api/v1/exchangeInfo" || 
-	req.url ~ "^/api/v1/depth" ||
-	req.url ~ "^/api/v1/trades" ||
-	req.url ~ "^/api/v1/historicalTrades" ||
-	req.url ~ "^/api/v1/klines" ||
-	req.url ~ "^/api/v1/ticker/24hr" ||
-	req.url ~ "^/api/v1/ticker/price" ||
-	req.url ~ "^/api/v1/ticker/bookTicker") { 
-                unset req.http.cookie;
-                return(hash);
-	}
-	else {
-                return(pass);
-	}
-}
+# Include all exchange specific configurations
+include "api-targets.vcl";
+
+# Catch all that have not matchd in all-vhosts. (Error 418 - bounce here)
+include "catch-all.vcl";
+
 sub vcl_backend_response {
 	# Cache policy for matched whitelist of URLs
     if (bereq.url ~ "^/api/v1/exchangeInfo" || 
@@ -251,6 +256,7 @@ sub vcl_backend_response {
         	unset beresp.http.set-cookie;
         	return(deliver);
     }
+
     if (bereq.url ~ "^/api/v1/ticker/24hr" ||
         bereq.url ~ "^/api/v1/ticker/price" ||
         bereq.url ~ "^/api/v1/ticker/bookTicker") {
@@ -262,10 +268,110 @@ sub vcl_backend_response {
         	return(deliver);
     }
 }
+
 sub vcl_deliver {
     # Happens when we have all the pieces we need, and are about to send the
 }
 ```
+api-targets.vcl:
+
+```
+include "sites-enabled/api.coinmarketcap.com.vcl";
+include "sites-enabled/1broker.com.vcl";
+include "sites-enabled/1btcxe.com.vcl";
+include "sites-enabled/acx.io.vcl";
+include "sites-enabled/anxpro.com.vcl";
+include "sites-enabled/anybits.com.vcl";
+include "sites-enabled/api-public.sandbox.gdax.com.vcl";
+include "sites-enabled/api.allcoin.com.vcl";
+include "sites-enabled/api.bibox.com.vcl";
+include "sites-enabled/api.binance.com.vcl";
+```
+
+sites-enabled/api.binance.com.vcl
+
+```
+sub vcl_recv {
+    # Only process calls to this domain
+     if (req.http.Host == "api.binance.com") {
+        # Not a method we know about - pretened we're not here
+        # pipe is right on past
+         if (req.method != "GET" &&
+           req.method != "HEAD" &&
+           req.method != "PUT" &&
+           req.method != "POST" &&
+           req.method != "TRACE" &&
+           req.method != "OPTIONS" &&
+           req.method != "DELETE") {
+             return (pipe);
+         }
+        # We're not going to cache anything not GET or HEAD
+        # anything other methods get a bypass first
+         if (req.method != "GET" && req.method != "HEAD") {
+             return (pass);
+         }
+        # White list of URLs to cache
+        # If not one these then bypass proxy and direct to binance
+         if (req.url ~ "^/api/v1/exchangeInfo" ||
+        req.url ~ "^/api/v1/depth" ||
+        req.url ~ "^/api/v1/trades" ||
+        req.url ~ "^/api/v1/historicalTrades" ||
+        req.url ~ "^/api/v1/klines" ||
+        req.url ~ "^/api/v1/ticker/24hr" ||
+        req.url ~ "^/api/v1/ticker/price" ||
+        req.url ~ "^/api/v1/ticker/bookTicker") {
+                    unset req.http.cookie;
+                    return(hash);
+        }
+        else {
+                    return(pass);
+        }
+	}
+}
+```
+
+catch-all.vcl
+
+```
+sub vcl_recv {
+    if ( req.http.Host != "ufciuwcginfhinfwihwihfixwfew" ) {
+     # Has not matched a site in all-vhosts. Return a 418
+        return (synth(418, "Im a teapot asked to make a coffee"));
+     }
+}
+
+sub vcl_backend_response {
+	# Cache policy for matched whitelist of URLs
+    if (bereq.url ~ "^/api/v1/exchangeInfo" ||
+        bereq.url ~ "^/api/v1/depth" ||
+        bereq.url ~ "^/api/v1/trades" ||
+        bereq.url ~ "^/api/v1/historicalTrades" ||
+        bereq.url ~ "^/api/v1/klines") {
+		# 15sec policy
+        	set beresp.ttl = 15s;
+        	set beresp.http.cache-control = "public, max-age = 15s";
+        	set beresp.http.X-CacheReason = "varnishcache";
+        	unset beresp.http.set-cookie;
+        	return(deliver);
+    }
+
+    if (bereq.url ~ "^/api/v1/ticker/24hr" ||
+        bereq.url ~ "^/api/v1/ticker/price" ||
+        bereq.url ~ "^/api/v1/ticker/bookTicker") {
+		# 5sec policy
+        	set beresp.ttl = 5s;
+        	set beresp.http.cache-control = "public, max-age = 1s";
+        	set beresp.http.X-CacheReason = "varnishcache";
+        	unset beresp.http.set-cookie;
+        	return(deliver);
+    }
+}
+
+sub vcl_deliver {
+    # Happens when we have all the pieces we need, and are about to send the
+}
+```
+
 
 # Help and Useful Stuff.
 Useful commands /info should you run into trouble
