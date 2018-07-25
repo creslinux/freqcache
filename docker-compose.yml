@@ -16,6 +16,7 @@ services:
     volumes:
       - ./1_stunnel/resolv.conf:/etc/resolv.conf
       - ./1_stunnel/conf.d:/etc/stunnel/conf.d
+      - ./1_stunnel/stunnel.conf:/etc/stunnel/stunnel.conf
     networks:
       ft_network:
         ipv4_address: 10.99.7.253
