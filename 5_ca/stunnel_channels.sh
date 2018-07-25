@@ -20,7 +20,8 @@ cd ${here}
 #connect = api.binance.com:443
 
 port=50000
-for x in `head ../5_ca/api-list | tr '[:upper:]' '[:lower:]'| grep [a-z]` 
+mkdir -p ../1_stunnel/conf.d/
+for x in `cat ../5_ca/api-list | tr '[:upper:]' '[:lower:]'| grep [a-z]` 
 do
 
 CONFIG="
