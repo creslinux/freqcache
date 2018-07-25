@@ -21,17 +21,19 @@ cd ${here}
 #    .between_bytes_timeout = 6000s;
 #}
 #######
-#if (req.http.host == "www.myhost2.com") {
-#    set req.backend = vm2;
-#}
+#sub vcl_recv {
+# if (req.http.host == "www.myhost2.com") {
+#     set req.backend_hint = vm2;
+# }
 #}
 
 port=50000 
 # Empty the files
->../2_varnish/etc/varnish/backends.vcl
 >../2_varnish/etc/varnish/backend_inc_logic.vcl
 >../2_varnish/etc/varnish/b_end
->../2_varnish/etc/varnish/b_inc
+
+echo "vcl 4.0;" >> ../2_varnish/etc/varnish/b_end
+echo "import std;" >> ../2_varnish/etc/varnish/b_end
 
 for x in `cat ../5_ca/api-list | tr '[:upper:]' '[:lower:]'| grep [a-z]` 
 do
@@ -62,20 +64,23 @@ backend ${y} {
 "
 
 CONFIG_INC="
-if (req.http.host == "\"${x}\"") {
-    set req.backend = ${y};
+sub vcl_recv {
+ if (req.http.host == "\"${x}\"") {
+     set req.backend_hint = ${y};
+ }
 }
 " 
 
 port=$((port + 1))
 echo "${CONFIG_BACK}">>../2_varnish/etc/varnish/b_end
-echo "${CONFIG_INC}">>../2_varnish/etc/varnish/b_inc
+echo "${CONFIG_INC}">>../2_varnish/etc/varnish/backend_inc_logic.vcl
 
 done
 
 # fill backends.vcl backend_inc_logic.vcl ( includeds in default.vcl)
-cat ../2_varnish/etc/varnish/b_end>>../2_varnish/etc/varnish/backends.vcl
-cat ../2_varnish/etc/varnish/b_inc>>../2_varnish/etc/varnish/backend_inc_logic.vcl
+
+cat ../2_varnish/etc/varnish/b_end>../2_varnish/etc/varnish/default.vcl
+cat ../2_varnish/etc/varnish/default.vcl.template>>../2_varnish/etc/varnish/default.vcl
 
 # Send back 
 cd ..
