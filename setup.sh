@@ -94,7 +94,6 @@ else
 	sleep 5
 fi
 
-
 cat <<"EOF"
 
 #########################################################
@@ -121,9 +120,14 @@ To use api-cache connect docker containers.
 Example RUN script to attach a Docker to the ft_network and api_cache
 Adds ft root ca cert, sets dns
 
- mkdir ft_ca_root/
- cp <your freqcache dir>/ca.crt ft_ca_root/ca.crt
+ mkdir -p ft_ca_root/
 
+EOF
+
+pwd=$(pwd)
+echo "cp ${pwd}/ca.crt ft_ca_root/ca.crt
+
+cat <<"EOF"
  docker run -d \
   --net="bridge" \
   --network=freqcache_ft_network \
