@@ -6,6 +6,13 @@ services:
     hostname: "ft_stunnel"
     container_name: "ft_stunnel"
     dns: 10.99.7.248
+    extra_hosts:
+      - "ft_unbound:10.99.7.248"
+      - "ft_dnsmasq:10.99.7.249"
+      - "ft_api_admin:10.99.7.250"
+      - "ft_hitch:10.99.7.251"
+      - "ft_varnish:10.99.7.252"
+      - "ft_stunnel:10.99.7.253"
     volumes:
       - ./1_stunnel/resolv.conf:/etc/resolv.conf
     networks:
@@ -13,12 +20,19 @@ services:
         ipv4_address: 10.99.7.253
     command: ["./client.sh"]
 
-  ft_varnish:  
+  ft_varnish:
     build: ./2_varnish
     restart: unless-stopped
     hostname: "ft_varnish"
     container_name: "ft_varnish"
     dns: 10.99.7.249
+    extra_hosts:
+      - "ft_unbound:10.99.7.248"
+      - "ft_dnsmasq:10.99.7.249"
+      - "ft_api_admin:10.99.7.250"
+      - "ft_hitch:10.99.7.251"
+      - "ft_varnish:10.99.7.252"
+      - "ft_stunnel:10.99.7.253"
     networks:
       ft_network:
         ipv4_address: 10.99.7.252
@@ -32,11 +46,18 @@ services:
     command: ["/run.sh"]
 
   ft_hitch:
-    build: ./3_hitch  
+    build: ./3_hitch
     restart: unless-stopped
     hostname: "ft_hitch"
     container_name: "ft_hitch"
     dns: 10.99.7.249
+    extra_hosts:
+      - "ft_unbound:10.99.7.248"
+      - "ft_dnsmasq:10.99.7.249"
+      - "ft_api_admin:10.99.7.250"
+      - "ft_hitch:10.99.7.251"
+      - "ft_varnish:10.99.7.252"
+      - "ft_stunnel:10.99.7.253"
     networks:
       ft_network:
         ipv4_address: 10.99.7.251
@@ -56,11 +77,18 @@ services:
     hostname: "ft_api_admin"
     container_name: "ft_api_admin"
     dns: 10.99.7.249
+    extra_hosts:
+      - "ft_unbound:10.99.7.248"
+      - "ft_dnsmasq:10.99.7.249"
+      - "ft_api_admin:10.99.7.250"
+      - "ft_hitch:10.99.7.251"
+      - "ft_varnish:10.99.7.252"
+      - "ft_stunnel:10.99.7.253"
     volumes:
       - ./4_api_admin/resolv.conf:/etc/resolv.conf
     networks:
       ft_network:
-        ipv4_address: 10.99.7.250 
+        ipv4_address: 10.99.7.250
 
   ft_dnsmasq:
     build: ./6_dnsmasq
@@ -68,12 +96,19 @@ services:
     hostname: "ft_dnsmasq"
     container_name: "ft_dnsmasq"
     dns: 10.99.7.249
+    extra_hosts:
+      - "ft_unbound:10.99.7.248"
+      - "ft_dnsmasq:10.99.7.249"
+      - "ft_api_admin:10.99.7.250"
+      - "ft_hitch:10.99.7.251"
+      - "ft_varnish:10.99.7.252"
+      - "ft_stunnel:10.99.7.253"
     volumes:
       - ./6_dnsmasq/dnsmasq.d:/etc/dnsmasq.d
       - ./6_dnsmasq/resolv.conf:/etc/resolv.conf
     networks:
       ft_network:
-        ipv4_address: 10.99.7.249 
+        ipv4_address: 10.99.7.249
     command: ["/run.sh"]
 
   ft_unbound:
@@ -82,6 +117,13 @@ services:
     hostname: "ft_unbound"
     container_name: "ft_unbound"
     dns: 10.99.7.248
+    extra_hosts:
+      - "ft_unbound:10.99.7.248"
+      - "ft_dnsmasq:10.99.7.249"
+      - "ft_api_admin:10.99.7.250"
+      - "ft_hitch:10.99.7.251"
+      - "ft_varnish:10.99.7.252"
+      - "ft_stunnel:10.99.7.253"
     volumes:
       - ./7_unbound/unbound.conf:/etc/unbound/unbound.conf
       - ./7_unbound/resolv.conf:/etc/resolv.conf
