@@ -18,6 +18,8 @@ cd ${here}
 #verify = 0
 #accept = 8080
 #connect = api.binance.com:443
+#verify = 2
+#CAfile = /etc/ssl/certs/ca-certificates.crt
 
 port=50000
 mkdir -p ../1_stunnel/conf.d/
@@ -30,6 +32,8 @@ client = yes
 verify = 0
 accept = ${port}
 connect = ${x}:443
+verify = 2
+CAfile = /etc/ssl/certs/ca-certificates.crt
 "
 echo "${CONFIG}" > ../1_stunnel/conf.d/${x}
  port=$((port + 1))
