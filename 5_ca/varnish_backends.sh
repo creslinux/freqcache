@@ -28,7 +28,7 @@ cd ${here}
 port=50000 
 >../2_varnish/etc/varnish/backends.vcl
 
-for x in `head ../5_ca/api-list | tr '[:upper:]' '[:lower:]'| grep [a-z]` 
+for x in `cat ../5_ca/api-list | tr '[:upper:]' '[:lower:]'| grep [a-z]` 
 do
 
 CONFIG_INC="
