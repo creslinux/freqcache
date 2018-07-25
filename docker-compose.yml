@@ -15,12 +15,13 @@ services:
       - "ft_stunnel:10.99.7.253"
     volumes:
       - ./1_stunnel/resolv.conf:/etc/resolv.conf
+      - ./1_stunnel/conf.d:/etc/stunnel/conf.d
     networks:
       ft_network:
         ipv4_address: 10.99.7.253
     command: ["./client.sh"]
 
-  ft_varnish:
+  ft_varnish:  
     build: ./2_varnish
     restart: unless-stopped
     hostname: "ft_varnish"
@@ -46,7 +47,7 @@ services:
     command: ["/run.sh"]
 
   ft_hitch:
-    build: ./3_hitch
+    build: ./3_hitch  
     restart: unless-stopped
     hostname: "ft_hitch"
     container_name: "ft_hitch"
@@ -88,7 +89,7 @@ services:
       - ./4_api_admin/resolv.conf:/etc/resolv.conf
     networks:
       ft_network:
-        ipv4_address: 10.99.7.250
+        ipv4_address: 10.99.7.250 
 
   ft_dnsmasq:
     build: ./6_dnsmasq
@@ -108,7 +109,7 @@ services:
       - ./6_dnsmasq/resolv.conf:/etc/resolv.conf
     networks:
       ft_network:
-        ipv4_address: 10.99.7.249
+        ipv4_address: 10.99.7.249 
     command: ["/run.sh"]
 
   ft_unbound:
