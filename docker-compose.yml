@@ -5,11 +5,10 @@ services:
     restart: unless-stopped
     hostname: "ft_stunnel"
     container_name: "ft_stunnel"
+    dns: 10.99.7.253
     networks:
       ft_network:
         ipv4_address: 10.99.7.253
-    dns:
-      - 10.99.7.253
     command: ["./client.sh"]
 
   ft_varnish:  
@@ -17,6 +16,7 @@ services:
     restart: unless-stopped
     hostname: "ft_varnish"
     container_name: "ft_varnish"
+    dns: 10.99.7.249
     networks:
       ft_network:
         ipv4_address: 10.99.7.252
@@ -24,6 +24,7 @@ services:
       - "ft_stunnel"
     volumes:
       - ./2_varnish/etc/varnish:/etc/varnish
+      - ./2_varnish/resolv.conf:/etc/resolv.conf
     depends_on:
       - ft_stunnel
     command: ["/run.sh"]
@@ -33,15 +34,15 @@ services:
     restart: unless-stopped
     hostname: "ft_hitch"
     container_name: "ft_hitch"
+    dns: 10.99.7.249
     networks:
       ft_network:
         ipv4_address: 10.99.7.251
-#    logging:
-#      driver: fluentd
     links:
       - "ft_varnish"
     volumes:
       - ./3_hitch/etc/ssl/hitch:/etc/ssl/hitch
+      - ./3_hitch/resolv.conf:/etc/resolv.conf
     env_file:
       - ./3_hitch/env_hitch
     depends_on:
@@ -52,9 +53,26 @@ services:
     restart: unless-stopped
     hostname: "ft_api_admin"
     container_name: "ft_api_admin"
+    dns: 10.99.7.249
+    volumes:
+      - ./4_api_admin/resolv.conf:/etc/resolv.conf
     networks:
       ft_network:
         ipv4_address: 10.99.7.250 
+
+  ft_dnsmasq:
+    build: ./6_dnsmasq
+    restart: unless-stopped
+    hostname: "ft_dnsmasq"
+    container_name: "ft_dnsmasq"
+    dns: 10.99.7.249
+    volumes:
+      - ./6_dnsmasq/dnsmasq.d:/etc/dnsmasq.d
+      - ./6_dnsmasq/resolv.conf:/etc/resolv.conf
+    networks:
+      ft_network:
+        ipv4_address: 10.99.7.249 
+    command: ["/run.sh"]
 
 networks:
   ft_network:

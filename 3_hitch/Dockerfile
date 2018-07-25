@@ -6,6 +6,7 @@ RUN /tmp/build.sh
 
 ADD start.sh /start.sh
 
+ENV LANG=en_US.UTF-8 TERM=xterm-256color
 ENV HITCH_PEM    /etc/ssl/hitch/combined.pem
 ENV HITCH_BACKEND --backend=[ft_varnish]:80 
 ENV HITCH_FRONTEND   --frontend=[10.99.7.251]:443
