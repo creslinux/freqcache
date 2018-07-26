@@ -1,4 +1,4 @@
-# FreqCache
+# FreqCache - 2!
 A docker-compose environment to control egress and ingress data from ccxt fronted trading bots for security and scalability/availability.
 
 FreqCache aims to improve Security and Scalbility environmental factors when running CCXT fronted trading bots within docker containers.
