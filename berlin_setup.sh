@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+cat <<"EOF"
+
+berslin_setup.sh is for berlinguy only, his environment needs admin
+for docker-compose on his mac.. ,, use the regular setup.sh if you're not him
+
+EOF
+
+sleep 3
+read -n 1 -s -r -p "ctr-c to cancel,,, ,or anykey to continue"
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
 cat <<"EOF"
 
