@@ -590,7 +590,12 @@ In bot client "run script" update download the new certificate from hitch and tr
  
  Uninistall and setup.sh for the changes to take affect.
  
-# Problem, I can only connect to api.binance.com
--  This is by design, to prevent egress data in case of hack/corrupted source etc.
+# Problem, I can only connect to abc.def.com
+-  freqcache allows connections to any URI (domain) in 5_ca/api-list
+To add an endpoint target add the URI in here and re-run setup. This will: 
+1) Add to your CA
+2) Create Vanish backend and cache rules
+3) create a stunnel channel
+
 
 
