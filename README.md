@@ -103,6 +103,17 @@ It is recommended to reduce this list to the minimum required.
 As example if your bot will only trade on binance, only hold the entry "api.binance.com".
 All other outbound access will then be denied. 
 
+A sample output
+```
+cat 5_ca/api-list
+1broker.com
+1btcxe.com
+acx.io
+anxpro.com
+anybits.com
+api-public.sandbox.gdax.com
+```
+
 
 # Connect a client
 To connect a docker CCXT bot into FreqCache modify its Run script. 
