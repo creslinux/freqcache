@@ -224,8 +224,10 @@ DNSMasq has not upstream route/connectivity.
 # unbound
 Caching DNS server unbound is installed on ft_unbound. 
 
-Unbound will only respond to request from ft_stunnel and will provide real IP detail.
-Unbound will cache and not refresh IP resolution from upstream for 1,000 days - preventing upstream DNS poisoning or hijacking from impacting our IP destination. 
+**Unbound will only respond to request from ft_stunnel and will provide real IP detail.***
+Unbound caches and will not refresh IP resolution from upstream for 1,000 day. 
+
+This preventing upstream DNS poisoning or hijacking from impacting our IP destination. 
 
 Unbound can be restarted/reloaded to clear/force refresh of its DNS cache.
 
@@ -250,7 +252,7 @@ server:
         #access-control: 0.0.0.0/0 allow       # to allow anyone - for build testing only
         access-control: 10.99.7.248/32 allow  # ft_unbound   (itself)
         access-control: 10.99.7.253/32 allow  # ft_stunnel   (the main purpose, client)
-        access-control: 10.99.7.250/32 allow  # ft_api_admin (for testing)
+        #access-control: 10.99.7.250/32 allow  # ft_api_admin (for testing)
         access-control: 0.0.0.0/0 refuse     # denyall others (default policy)
 
 ## ft security - cache all dns for 100 days.
