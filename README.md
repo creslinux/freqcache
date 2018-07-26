@@ -578,33 +578,34 @@ Network Schema, ft_network: 10.99.0.0/21 by default (2048 IPs available)
 
 There is no direct connectivity to ft_bridge network. Some debug and testing can be done from the api_admin_host which is a slimmed down alpine host with basic connectivity tools.
 
->1) Connect to ft_api_admin docker which is on the ft_bridge network 
+> 1) Connect to ft_api_admin docker which is on the ft_bridge network 
 ```
 docker exec -it ft_api_admin bash
 ```
 
->2) Check connectivity between ft_* hosts (from ft_api_admin)
+> 2) Check connectivity between ft_* hosts (from ft_api_admin)
 ```ping ft_hitch
 ping ft_varnish
 ping ft_stunnel
 ```
 
->3) Check end-to-end is working without certificate check, from ft_api_admin : 
+> 3) Check end-to-end is working without certificate check, from ft_api_admin : 
 ```
 curl -k --resolve api.binance.com:443:ft_hitch https://api.binance.com/api/v1/time
 ```
 
->4) Check end-to-end is working with certificate check, from HOST:
+> 4) Check end-to-end is working with certificate check, from ft_api_admin:
 >(** If this works, the problem most likely is with client run conf)
 ```
-file=api.binance.com.cert.pem
-mkdir hitch_cert
-docker cp ft_hitch:/etc/ssl/hitch/${file} hitch_cert/${file}
-cp "hitch_cert/$file" "hitch_cert/$(openssl x509 -hash -noout -in "hitch_cert/$file")"
-curl --cacert hitch_cert/${file} --resolve api.binance.com:443:ft_hitch https://api.binance.com/api/v1/time
+mkdir -p ft_ca_root/
+cp <your install dir>/ca.crt ft_ca_root/ca.crt
+docker cp ft_ca_root/ca.crt ft_api_admin:/ca.crt
+
+docker exec -it ft_api_admin bash 
+curl --cacert /ca.cert --resolve api.binance.com:443:ft_hitch https://api.binance.com/api/v1/time
 ```
 
->5) Connect into  the shell of a freq cache container
+> 5) Connect into  the shell of a freq cache container
 > (from the same dir as docker-compose.yml)
 ```
 docker-compose exec ft_stunnel bash OR docker exec -it ft_stunnel bash
@@ -641,6 +642,30 @@ docker-compose exec ft_stunnel nslookup api.binance.com
 docker-compose exec ft_stunnel curl https://api.binance.com/api/v1/time
 ```
 
+> 10.1 Check the chanels are loade for your target API endpoints. 
+```
+docker exec -t ft_stunnel ls /etc/stunnel/conf.d
+1broker.com		     braziliex.com
+1btcxe.com		     broker.negociecoins.com.br
+acx.io			     btc-alpha.com
+anxpro.com		     btc-trade.com.ua
+anybits.com		     btc-x
+```
+
+And the contents look correct: 
+```
+docker exec -t ft_stunnel cat /etc/stunnel/conf.d/braziliex.com
+[braziliex.com]
+client = yes
+verify = 0
+accept = 50073
+connect = braziliex.com:443
+verify = 2
+CAfile = /etc/ssl/certs/ca-certificates.crt
+checkhost = braziliex.com
+```
+
+
 # Varnish:
 > 11) Check varnish configuration file is mounted, correct
 ```
@@ -675,7 +700,7 @@ openssl s_client -servername api.coinmarketcap.com  -connect ft_hitch:443
 Check the right certificates is returned
 
 # Network
->15) Inspect docker network, confirm name the inspect 
+> 15) Inspect docker network, confirm name the inspect 
 ```
 docker network ls
 docker network inspect freqcache_ft_network
@@ -687,15 +712,13 @@ sudo iptables -vL
 ```
 
 # Client
-> 17) Check client has certificate hash - should be a string similare to '69ede4a8'
+> 17) Check client has ca root certificate
 ```
-docker exec -t <CLIENT CONTAINER> ls /hitch_cert/
+docker exec -t <CLIENT CONTAINER> ls /ft_ca_root/ca.crt
 ```
 
-> 18) Check certificate is for exhange target,usee hash string discovered in prior command
-```
-docker exec -t  <CLIENT CONTAINER> openssl x509 -noout -text -in /hitch_cert/<CERT_HASH>
-```
+> 18) - removed.  
+
 
 > 19) Check client REQUESTS_CA_BUNDLE and SSL_CERT_FILE are set correctly, used by URLLIB3
 ```
@@ -703,13 +726,23 @@ docker exec -it <CLIENT CONTAINER> bash
 set 2>&1 | grep REQUESTS_CA_BUNDLE
 set 2>&1 | grep SSL_CERT_FILE
 ``` 
->20) Uninstall everything
+> 20) Uninstall everything
 ```
 uninstall.sh 
 or (same but explicit)
-docker stop ft_stunnel ft_varnish ft_hitch
-docker rm ft_stunnel ft_varnish ft_hitch
-docker rmi freqcache_ft_stunnel freqcache_ft_varnish freqcache_ft_hitch
+#!/usr/bin/env bash
+#/usr/bin/env bash
+## Clear down freqcache containers, images, generated content 
+
+docker stop ft_stunnel ft_varnish ft_hitch ft_api_admin ft_ca ft_dnsmasq ft_unbound
+docker rm ft_stunnel ft_varnish ft_hitch ft_api_admin ft_ca ft_dnsmasq ft_unbound
+docker rmi freqcache_ft_stunnel freqcache_ft_varnish freqcache_ft_hitch freqcache_ft_api_admin freqcache_ft_ca freqcache_ft_dnsmasq freqcache_ft_unbound
+
+# Remove old certs and vcl configs
+rm -rf 5_ca/ca
+rm 3_hitch/etc/ssl/hitch/* 
+rm 1_stunnel/conf.d/*
+
 ```
 
 # Other
