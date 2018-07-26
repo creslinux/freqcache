@@ -9,6 +9,11 @@ To install FreqCache.
 3) run bash setup.sh 
 4) *To uninstall run uninstall.sh
 
+# Overview
+![alt text](https://raw.githubusercontent.com/creslinux/freqcache/master/diag_images/arch_diag_fc.png)
+![alt text](diag_images/arch_diag_fc.png)
+
+
 # Security
 Security in computing is improved by depth. 
 This refers to layers of technologies adding protection, so if 1 were vulnerable another mitigates the harm. 
