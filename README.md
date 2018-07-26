@@ -15,7 +15,7 @@ To install FreqCache.
 4) *To uninstall run uninstall.sh
 
 # Overview
-![alt text](diag_images/arch_diag_fc.png)
+![alt text](diag_images/arch_diag_fc1.png)
 
 
 # Security
