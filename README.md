@@ -229,6 +229,45 @@ Unbound will cache and not refresh IP resolution from upstream for 1,000 days - 
 
 Unbound can be restarted/reloaded to clear/force refresh of its DNS cache.
 
+The configuration of unbound is read in a container start. 
+The provided configuration is in 
+```
+7_unbound/unbound.conf
+```
+and reads:
+```
+server:
+        verbosity: 1
+## Interface address to listen on:
+        interface: 10.99.7.248             # Listen on ft_network interface
+        #interface: 0.0.0.0                  # Listen on all interfaces. Debug
+        do-ip4: yes
+        do-ip6: no
+        do-udp: yes
+        do-tcp: no
+        do-daemonize: no
+        logfile: ""
+        #access-control: 0.0.0.0/0 allow       # to allow anyone - for build testing only
+        access-control: 10.99.7.248/32 allow  # ft_unbound   (itself)
+        access-control: 10.99.7.253/32 allow  # ft_stunnel   (the main purpose, client)
+        access-control: 10.99.7.250/32 allow  # ft_api_admin (for testing)
+        access-control: 0.0.0.0/0 refuse     # denyall others (default policy)
+
+## ft security - cache all dns for 100 days.
+## to protect from dns poison / hijack
+#
+## Minimum lifetime of 8640000 100 days (86400 is 1day)
+cache-min-ttl: 8640000
+## Maximum lifetime of cached entries - 100 days
+cache-max-ttl: 8640000
+        hide-identity: yes
+        hide-version: yes
+
+forward-zone:
+  name: "."
+forward-addr: 8.8.8.8                        # Google as forward lookup when not in cache
+```
+
 # ft_hitch
 Hitch is an SSL offload daemon provded by varnish, the leading fast cache daemon.
 On start hitch mounts etc/ssl/hitch from the host 03_hitch/etc/ssl/hitch/.
