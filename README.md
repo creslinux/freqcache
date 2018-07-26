@@ -3,6 +3,11 @@ A docker-compose environment to control egress and ingress data from ccxt fronte
 
 FreqCache aims to improve Security and Scalbility environmental factors when running CCXT fronted trading bots within docker containers.
 
+TL;DR 
+- Prevent external DNS poisoning / Hijack routing our API keys to a hacker
+- Protect against bot source code, or dependency trying to send your API keys out to hacker
+- Place limitting api-cache between bots and internet to prevent hitting api limits(being black listed)
+
 To install FreqCache. 
 1) Clone this repository (git clone https://github.com/creslinux/freqcache.git)
 2) cd freqcache (the parent directory should keep its 'freqcache' name as expected in generated images/netowrk names)
@@ -10,7 +15,6 @@ To install FreqCache.
 4) *To uninstall run uninstall.sh
 
 # Overview
-![alt text](https://raw.githubusercontent.com/creslinux/freqcache/master/diag_images/arch_diag_fc.png)
 ![alt text](diag_images/arch_diag_fc.png)
 
 
