@@ -33,6 +33,9 @@ A docker container connected into FreqCache can only connect out via the api-cac
 
 FreqCache mitigates this exposure. Should your software or linked library be compromised then no data may be taken from your host. FreqCache prevents silent Egress leaking of data.
 
+Freqcache will stop any outbound access from a trading bot that is not explicetly whitelisted. 
+The suite will read in the plain-text file "api-list" on setup. Any URIs not in this file cannot be processed by either ft_varnish or stunnel. Varnish will first reject the request. Stunnel, would not be it, but can only has channels configured that are hard-coded at setup to the white-list destinations.
+
 > In Dec 2017 Binance, MyEtherwallet and Etherdelta
 > users were compromised through DNS Hijack. 
 > By taking control of an Exchanges DNS records 
@@ -40,8 +43,9 @@ FreqCache mitigates this exposure. Should your software or linked library be com
 > IP addresses that led connections to Hackers MITM
 > (man in the middle) proxy. Where API credentials and 
 > Passwords were harvested. 
+ 
 
-FreqCache first prevents DNS lookups from any bot reaching the internet (except stunnel), as this itself may be an Egress leak of data.  Freqtrade runs two DNS servers:
+FreqCache prevents DNS lookups from any bot reaching the internet (except stunnel), as this itself may be an Egress leak of data.  Freqtrade runs two DNS servers:
 
 1) DNSMasq - provides service to all internal bots. It will respond to any query with the IP address of hitch. 
 This is used as a simple means to configure containers to direct their functional traffic to the freqcache proxy
@@ -49,7 +53,7 @@ This is used as a simple means to configure containers to direct their functiona
 2) unbound - provides DNS with real IP Addresses to Stunnle. unbound will only respond to requests from Stunnel. 
    unbound is configured to cache all responses for 1,000 days.   
    
-   This prevents any DNS poisoning or Hijacking upstream from compromising the outbound flow IP target from stunnel for HTTPS connections. The DNS can be flushed/reloaded to refresh the IP cache to update if desired (an exchange has moved its IP addres this is quite rare as exchanges provide steady API targets)
+This prevents any DNS poisoning or Hijacking upstream from compromising the outbound flow IP target from stunnel for HTTPS connections. The DNS can be flushed/reloaded to refresh the IP cache to update if desired (an exchange has moved its IP addres this is quite rare as exchanges provide steady API targets)
    
 Many are unaware that by default Docker instances compromise the hosts firewall. 
 In Linux, UFW/IPtables rules are silently compromised by Docker that allows connections from any src and to any src from and to docker containers. 
@@ -87,9 +91,20 @@ The flow of data is CCXT DockerBot > ft_Hitch > ft_Varnish > ft_Stunnel > Exchan
 
 FreqCache makes use of its own private bridged Docker network from which only stunnel has outbound connectivty. There is no inbound connectivity allowed.  
 
-By default Freqache is configured for api.binance.com 
+# api-list (white list of allowed end-points)
 
-# Connect a client!
+Api-list is a plain-test list of URIs that after setup.sh is ran freqcache can connect to.
+
+By default 5_ca/api-list is a complete list of all CCXT supported exhanges, plus api.coinmarketcap.com. 
+Removing, or adding, any HTTPS domain into this list and running setup.sh will Prevent or Allow access to that respectively.
+
+It is recommended to reduce this list to the minimum required. 
+
+As example if your bot will only trade on binance, only hold the entry "api.binance.com".
+All other outbound access will then be denied. 
+
+
+# Connect a client
 To connect a docker CCXT bot into FreqCache modify its Run script. 
 Example RUN script to attach a bot to the ft_network and api_cache
 
@@ -239,17 +254,16 @@ Varnish is the leading web cache engine, also known as fastly. Varnish is config
 Varnish is also confiured to block and requests that are not to an entry in your api-list.
 Varnish configuation files are mounted when the service is ran and can be found under: 
 
-The configuration files are built by the script shown which is executed at install. 
-The script loops through your api-list end points and creates a vcl ruls and include for each record.
+```
+2_varnish/etc/varnish/
+``` 
+
+Varnish configuration files are built at install, running setup.sh, which calls the two listed scripts. 
+The scripts loops through your api-list end points and creates a vcl rules, include, and backends for each record.
 
 ```
 5_ca/varnish_vhosts.sh
-```
-
-Varnish configuation files are mounted when the service is ran and can be found under: 
-
-```
-ls 2_varnish/etc/varnish/
+5_ca/varnish_backends.sh
 ```
 
 For changes to the rules to be loaded stop/star varnish
@@ -264,13 +278,19 @@ With this structure the follwing files are present and are included in the order
 ```
 default.vcl  (head of the configutation with common rules - which includes:)
 > api-targets.vcl  (a list of site-enabled/a.exchange.com.vcl to include)
+> backend_inc_logic.vcl
 >>> sites-enabled/a.site.com.vcl
 >>> sites-enabled/anoher.exchange.com.vcl
 > catch-all.vcl (footer of configuration with common deny and other rules)
 ```
 Any site without an include in api-targets.vcl and a rule file under sites-enabled/ will be returned with a HTTP err 418. 
 
-default.vcl:
+A specific rules and backend is written for each white listed site. 
+The backend will route requests for target host to an stunnel HTTP to HTTPS tunnel that is hard coded to that desitnation. 
+
+This provides two layers of protection against egress data leaking an unintended destination.
+
+default.vcl: ( **Ony 1 backend listed in the example, yuni_com - each white list will have its own)
 
 ```
 vcl 4.0;
@@ -281,6 +301,23 @@ backend default {
     .host = "ft_stunnel";
     .port = "8080";
 }
+
+backend yunbi_com {
+    .host = "ft_stunnel";
+    .port = "50144";
+    .connect_timeout = 60s;
+    .first_byte_timeout = 60s;
+    .between_bytes_timeout = 60s;
+}
+
+# Default backend definition. Set this to point to your content server.
+backend default {
+    .host = "ft_stunnel";
+    .port = "8080";
+}
+
+
+include "backend_inc_logic.vcl";
 
 sub vcl_recv {
      # Lowercase all incoming host portion or URL
@@ -323,6 +360,7 @@ sub vcl_backend_response {
 sub vcl_deliver {
     # Happens when we have all the pieces we need, and are about to send the
 }
+
 ```
 api-targets.vcl:
 
@@ -380,6 +418,15 @@ sub vcl_recv {
 	}
 }
 ```
+backend_inc_logic.vcl ( **Ony 1 backend listed in the example, yuni_com - each white list will have its own)
+
+```
+sub vcl_recv {
+ if (req.http.host == "yunbi.com") {
+     set req.backend_hint = yunbi_com;
+ }
+}
+```
 
 catch-all.vcl
 
@@ -420,8 +467,48 @@ sub vcl_backend_response {
 
 sub vcl_deliver {
     # Happens when we have all the pieces we need, and are about to send the
-}
+
 ```
+
+# Stunnel 
+On setup.sh the a stunnel channel for each target is written. 
+Each channle has its own target destination and listens on its own TCP port.
+
+Stunnel will forward any HTTP traffic on it channel port to its hard-coded distination.
+This ensures no egress HTTPS data to any unwanted destinations that may be attempting to recieve API keys sent from compromised source bot code or include code. 
+
+Each stunnel channel is also responsible for tests against the exchange to veryfiy the server certificate.
+
+freqcache is configured to check, server cert is signed by a trusted CA, is from the correct host.  
+```
+cat api.binance.com
+
+[api.binance.com]
+client = yes
+verify = 0
+accept = 50008
+connect = api.binance.com:443
+verify = 2
+CAfile = /etc/ssl/certs/ca-certificates.crt
+checkhost = api.binance.com
+```
+
+```
+1_stunnel/conf.d/
+```
+by the script
+```
+stunnel_channels.sh
+```
+as example: 
+```
+ls 1_stunnel/conf.d/
+1broker.com                  api.lbank.info              paymium.com
+1btcxe.com                   api.liqui.io                plus-api.btcchina.com
+acx.io                       api.livecoin.net            poloniex.com
+anxpro.com                   api.mybitx.
+```
+
 
 
 # Help and Useful Stuff.
