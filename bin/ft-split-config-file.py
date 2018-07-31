@@ -37,10 +37,10 @@ with open(args.input) as file:
         # otherwise generate a db url
         else:
             if 'strategy' in configuration:
-                configuration['db_url'] = "sqlite:///config.{}.{}.sqlite".format(configuration['strategy'],
+                configuration['db_url'] = "sqlite:///user_data/data/config.{}.{}.sqlite".format(configuration['strategy'],
                                                                                  pair.replace("/", "_"))
             else:
-                configuration['db_url'] = "sqlite:///config.{}.sqlite".format(pair.replace("/", "_"))
+                configuration['db_url'] = "sqlite:///user_data/data/config.{}.sqlite".format(pair.replace("/", "_"))
 
         # always disable telegram, since it won't work with mutliple parallel bots
         if 'telegram' in configuration:
