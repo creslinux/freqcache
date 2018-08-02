@@ -14,6 +14,7 @@ It will also configure an unique database for each of these configuration files 
 ```python
 
  python3 bin/ft-split-config-file.py --input bots/config/multitest.json --directory bots/config/generate
+
 ```
 This will now generate the requested configuration files in the generate directory. which can than be specified as argument
 for the ft-generate-bots.py script to generate a docker-compose file to launch all these bots.
@@ -29,6 +30,33 @@ writing config file /Users/wohlgemuth/freqcache/bots/config/generate/multitest.R
 writing config file /Users/wohlgemuth/freqcache/bots/config/generate/multitest.OST_BTC.json
 writing config file /Users/wohlgemuth/freqcache/bots/config/generate/multitest.SNM_BTC.json
 ```
+
+### ft-strategies-to-configs
+
+This script will take a template configuration file and a directory of strategies and generate all possible
+configuration file options at the specified output directory.
+
+If you like, these strategies can be embedded as BASE64 encoded string in the generated configuration file.
+
+#### Invoking it
+```python
+
+ python3 bin/ft-strategies-to-configs.py --strategies ~/workspace/freqtrade-secret-strategies/ --input bots/config/template.json --directory bots/config/strat_config --embedded
+
+```
+
+#####Example output:
+
+```python
+
+writing config file /home/wohlgemuth/workspace/freqcache/bots/config/strat_config/template.MultiTest71.json
+writing config file /home/wohlgemuth/workspace/freqcache/bots/config/strat_config/template.MultiTest6.json
+writing config file /home/wohlgemuth/workspace/freqcache/bots/config/strat_config/template.MultiTest.json
+writing config file /home/wohlgemuth/workspace/freqcache/bots/config/strat_config/template.MultiTest9.json
+writing config file /home/wohlgemuth/workspace/freqcache/bots/config/strat_config/template.TrendTest1.json
+writing config file /home/wohlgemuth/workspace/freqcache/bots/config/strat_config/template.MultiTest7.json
+```
+
 ### ft-generate-bots.py
 
 This scripts utility is to easily generate a docker compose file for to launch 100s of bots. The idea behind it, is that 
