@@ -9,7 +9,6 @@ import json
 import os
 from base64 import urlsafe_b64encode
 from pathlib import Path
-from pprint import pprint
 
 ##
 # define our comncmand line arguments
