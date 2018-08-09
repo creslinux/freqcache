@@ -60,7 +60,7 @@ chmod +x 5_ca/build_ca_certs.sh
 5_ca/build_ca_certs.sh
 
 # Put ca.crt in parent dir to be easily found
-cp 5_ca/ca/pki/ca.crt ca.crt
+cp 5_ca/ca/pki/ca.crt cacert.pem
 
 
 #####
@@ -139,7 +139,7 @@ Adds ft root ca cert, sets dns
  mkdir -p ft_ca_root/
 EOF
 pwd=$(pwd)
-echo " cp ${pwd}/ca.crt ft_ca_root/ca.crt"
+echo " cp ${pwd}/cacert.pem ft_ca_root/cacert.pem"
 
 cat <<"EOF"
 
@@ -148,10 +148,7 @@ cat <<"EOF"
   --net="bridge" \
   --network=freqcache_ft_network \
   --dns=10.99.7.249 \
-  -v $(pwd)/ft_ca_root:/ft_ca_root \
-  -e SSL_CERT_FILE="/ft_ca_root/ca.crt" \
-  -e CURL_CA_BUNDLE="/ft_ca_root/ca.crt" \
-  -e REQUESTS_CA_BUNDLE="/ft_ca_root/ca.crt" \
+  -v $(pwd)/ft_ca_root/cacert.pem:/usr/local/lib/python3.6/site-packages/certifi/cacert.pem \
   ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND>
 
 EOF
