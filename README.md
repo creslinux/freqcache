@@ -163,17 +163,13 @@ The key points are
 
 ```
   mkdir -p ft_ca_root/
- cp <your install dir>/freqcache/ca.crt ft_ca_root/ca.crt
+ cp <your install dir>/freqcache/cacert.pem ft_ca_root/cacert.pem"
 
-
- docker run -d \
+  docker run -d \
   --net="bridge" \
   --network=freqcache_ft_network \
   --dns=10.99.7.249 \
-  -v $(pwd)/ft_ca_root:/ft_ca_root \
-  -e SSL_CERT_FILE="/ft_ca_root/ca.crt" \
-  -e CURL_CA_BUNDLE="/ft_ca_root/ca.crt" \
-  -e REQUESTS_CA_BUNDLE="/ft_ca_root/ca.crt" \
+  -v $(pwd)/ft_ca_root/cacert.pem:/usr/local/lib/python3.6/site-packages/certifi/cacert.pem \
   ...... <THE REMAINDER OF YOUR USUAL DOCKER RUN COMMAND>
 ```
 This will: 
@@ -757,11 +753,15 @@ docker exec -t <CLIENT CONTAINER> ls /ft_ca_root/ca.crt
 > 18) - removed.  
 
 
-> 19) Check client REQUESTS_CA_BUNDLE and SSL_CERT_FILE are set correctly, used by URLLIB3
+> 19) Check certifi has the correct root ca file. 
+
+- find where the client's certifi is pointing to
+- cat out the file
+- check it is the same one as your CAs cacert.pem 
 ```
-docker exec -it <CLIENT CONTAINER> bash
-set 2>&1 | grep REQUESTS_CA_BUNDLE
-set 2>&1 | grep SSL_CERT_FILE
+docker exec -it <CLIENT CONTAINER> python3 -m certifi -c "print(certifi.where())"
+docker exec -it <CLIENT CONTAINER> cat <THE LOCATION OF CERTIFI.CERT FROM LAST CMD>
+cat <your install dir>/freqcache/cacert.pem
 ``` 
 > 20) Uninstall everything
 ```
