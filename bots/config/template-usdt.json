@@ -1,0 +1,65 @@
+{
+  "max_open_trades": 1,
+  "stake_currency": "USDT",
+  "stake_amount": 100,
+  "fiat_display_currency": "USD",
+  "trailing_stop": true,
+  "dry_run": true,
+  "unfilledtimeout": {
+    "buy": 10,
+    "sell": 30
+  },
+  "bid_strategy": {
+    "ask_last_balance": 0.0,
+    "use_book_order": false,
+    "book_order_min": 1,
+    "book_order_max": 2
+  },
+  "ask_strategy": {
+    "use_book_order": false,
+    "book_order_min": 1,
+    "book_order_max": 30
+  },
+  "exchange": {
+    "name": "binance",
+    "key": "",
+    "secret": "",
+     "pair_whitelist": [
+ "BTC/USDT",
+"EOS/USDT",
+"ETH/USDT",
+"NEO/USDT",
+"TRX/USDT",
+"ADA/USDT",
+"BCH/USDT",
+"BNB/USDT",
+"ETC/USDT",
+"XRP/USDT",
+"LTC/USDT",
+"ONT/USDT",
+"IOTA/USDT",
+"TUSD/USDT",
+"ICX/USDT",
+"VEN/USDT",
+"XLM/USDT",
+"QTUM/USDT"
+     ],
+
+    "pair_blacklist": [
+    ]
+  },
+  "experimental": {
+    "use_sell_signal": true,
+    "sell_profit_only": true,
+    "ignore_roi_if_buy_signal": true
+  },
+  "telegram": {
+    "enabled": false,
+    "token": "",
+    "chat_id": ""
+  },
+  "initial_state": "running",
+  "internals": {
+    "process_throttle_secs": 5
+  }
+}

@@ -14,6 +14,43 @@ To install FreqCache.
 3) run bash setup.sh 
 4) *To uninstall run uninstall.sh
 
+# Launching a BotNet
+
+Like always you can launch a bot net, by executing one docker container at a time, with your specified configuration. Which is great
+for a fine grained launching of servides.
+
+Alternatively, you will find scripts and a readme in the `bin` directory to easily generate a docker compose file,
+containing 100s of different configurations. 
+
+This will vastly simplify launching different BotNet configurations.
+
+#### Quick launch
+
+After your successful service installation, you can launch your botnet in 4 lines of codes. We recommend you to use the file
+`bots/config/template.json` for the first examples, which is configured in dryrun mode.
+
+###### Launch based on multiple strategies
+
+This example demonstrates how to launch a botnet, based on multiple different strategies
+```bash
+cp ALL_MY_STRATEGIES bots/strategies
+python3 bin/ft-strategies-to-configs.py --strategies bots/strategies --input bots/config/template.json --directory bots/config/strat_config --embedded
+python3 bin/ft-generate-bots.py --config bots/config/strat_config
+docker-compose -f docker-compose.bot.yml up
+```
+
+###### Launch based on split configurations
+
+This example, demonstrates how to launch a botnet, based on one strategy with a split configuration. This approach is useful
+,if you are having a lot of pairs you want to trade and so maximize scalability.
+
+
+```bash
+python3 bin/ft-split-config-file.py --input bots/config/template.json --directory bots/config/split_config
+python3 bin/ft-generate-bots.py --config bots/config/split_configp
+docker-compose -f docker-compose.bot.yml up
+```
+
 # Overview
 ![alt text](diag_images/arch_diag_fc1.png)
 
