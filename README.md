@@ -14,15 +14,6 @@ To install FreqCache.
 3) run bash setup.sh 
 4) *To uninstall run uninstall.sh
 
-# Launching a BotNet
-
-Like always you can launch a bot net, by executing one docker container at a time, with your specified configuration. Which is great
-for a fine grained launching of servides.
-
-Alternatively, you will find scripts and a readme in the `bin` directory to easily generate a docker compose file,
-containing 100s of different configurations. 
-
-This will vastly simplify launching different BotNet configurations.
 
 # Overview
 ![alt text](diag_images/arch_diag_fc1.png)
@@ -151,6 +142,7 @@ This will:
 - Load certificate and CA environment variables into the bot 
 
 This should provide the bot with seemless conenctivity to api.binance.com but no other connectivty. 
+
 
 # Launching a BotNet
 
